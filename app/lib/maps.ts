@@ -78,7 +78,7 @@ export const Maps: MapRecord = {
     Suravasa: {
         mapType: 'flashpoint',
     },
-    AntarcticPeninsula: {
+    "Antarctic Peninsula": {
         mapType: 'control',
     },
     Runasapi: {
@@ -87,7 +87,7 @@ export const Maps: MapRecord = {
     Samoa: {
         mapType: 'control',
     },
-    ShambaliMonastery: {
+    "Shambali Monastery": {
         mapType: 'escort',
     },
 }
