@@ -6,7 +6,15 @@ export const match = sqliteTable('match', {
     result: text().notNull(),
     scoreSelf: int().notNull(),
     scoreOpponent: int().notNull(),
-    duration: text().notNull(),
+    duration: int().notNull(),
     matchTimestamp: text().notNull(),
     matchType: text().notNull(),
+    collectionId: int()
+        .notNull()
+        .references(() => collection.id),
+})
+
+export const collection = sqliteTable('collection', {
+    id: int().primaryKey({ autoIncrement: true }),
+    name: text().notNull(),
 })
