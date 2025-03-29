@@ -1,0 +1,9 @@
+services:
+  ow-match-log:
+    build: .
+    environment:
+      - DB_FILE_PATH=/data/owml.db
+      - OPENAI_API_KEY=
+    ports:
+      - 3000:3000
+    network_mode: host

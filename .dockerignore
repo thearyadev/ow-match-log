@@ -1,0 +1,4 @@
+node_modules/
+owml.db
+data/
+ocr/.venv/
