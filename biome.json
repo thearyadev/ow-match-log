@@ -39,6 +39,6 @@
         }
     },
     "files": {
-        "ignore": [".next/**", "package.json", "app/styles/app.css"]
+        "ignore": [".next/**", "package.json", "app/styles/app.css", "ocr/**"]
     }
 }

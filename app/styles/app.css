@@ -126,18 +126,17 @@ table {
   @apply font-mono text-sm border-collapse;
 }
 
-td, th {
-  @apply p-[10px] text-left m-0
+td,
+th {
+  @apply p-[10px] text-left m-0;
 }
 
 tr:nth-child(even) {
-  @apply bg-neutral-800
+  @apply bg-neutral-800;
 }
 
-
-
 th {
-  @apply sticky top-0 bg-neutral-950
+  @apply sticky top-0 bg-neutral-950;
 }
 
 [data-highcharts-chart] {
