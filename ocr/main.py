@@ -2,7 +2,7 @@ from paddleocr import PaddleOCR
 from rich import print
 import sys
 
-[_, imagePath, *_] = sys.argv
+[_, imagePath, *otherArgs] = sys.argv
 
 def get_ocr(imagePath):
     ocr = PaddleOCR()
@@ -24,6 +24,10 @@ def dump_result(result):
 
 
 def main() -> int:
+    if otherArgs: 
+        print("running init")
+        PaddleOCR()
+        return 0
     result = get_ocr(imagePath)
     dump_result(result)
     return 0
