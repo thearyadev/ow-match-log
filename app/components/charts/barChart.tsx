@@ -1,14 +1,6 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react'
 import * as Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card'
-import { Await } from '@tanstack/react-router'
 import ForceClient from '../forceClient'
 
 interface BarChartData {

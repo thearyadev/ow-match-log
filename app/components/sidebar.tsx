@@ -5,10 +5,10 @@ import {
     SidebarContent,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar'
 
 interface SidebarItem {
@@ -18,11 +18,11 @@ interface SidebarItem {
 }
 
 export function AppSidebar({ items }: { items: SidebarItem[] }) {
+    const {setOpen} = useSidebar()
     return (
-        <Sidebar>
+        <Sidebar collapsible='icon' variant='floating' onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>OW Match Log</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {items.map((item) => (
