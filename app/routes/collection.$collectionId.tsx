@@ -422,7 +422,7 @@ function MatchTable({ matches }: { matches: Match[] }) {
         getCoreRowModel: getCoreRowModel(),
     })
     return (
-        <div className="w-full h-screen ">
+        <div className="w-full h-screen">
             <table className="w-full ">
                 <thead className="">
                     {table.getHeaderGroups().map((headerGroup) => (

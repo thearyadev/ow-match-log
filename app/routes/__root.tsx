@@ -51,6 +51,12 @@ export default function RootLayout({ children }) {
 
 export const Route = createRootRoute({
     head: () => ({
+        links: [
+            {
+                rel: 'stylesheet',
+                href: appCss,
+            },
+        ],
         meta: [
             {
                 charSet: 'utf-8',
@@ -61,12 +67,6 @@ export const Route = createRootRoute({
             },
             {
                 title: 'Overwatch Match Log',
-            },
-        ],
-        links: [
-            {
-                rel: 'stylesheet',
-                href: appCss,
             },
         ],
     }),
