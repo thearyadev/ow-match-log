@@ -15,7 +15,13 @@ import path from 'node:path'
 import os from 'node:os'
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
 
 const GetCollections = createServerFn().handler(async () => {
     const data = await db.select().from(collection).execute()
@@ -215,7 +221,7 @@ async function _ProcessMatchHistory(imageUrl: string, collectionId: number) {
 }
 
 const ProcessMatchHistory = createServerFn({ method: 'POST' })
-    .validator((data: {imageUrl: string, collectionId: number}) => data)
+    .validator((data: { imageUrl: string; collectionId: number }) => data)
     .handler(async ({ data }) => {
         return await _ProcessMatchHistory(data.imageUrl, data.collectionId)
     })
@@ -258,7 +264,12 @@ function RouteComponent() {
         const reader = new FileReader()
         reader.onload = async (e) => {
             toast.promise(
-                ProcessMatchHistory({ data: { imageUrl: e.target?.result as string, collectionId } }),
+                ProcessMatchHistory({
+                    data: {
+                        imageUrl: e.target?.result as string,
+                        collectionId,
+                    },
+                }),
                 {
                     loading: 'Analyzing match history...',
                     success: 'Match history analyzed successfully!',
@@ -277,13 +288,18 @@ function RouteComponent() {
         <>
             <div className="flex-grow flex justify-center overflow-y-hidden p-4">
                 <div className="h-full w-full flex flex-col gap-3">
-                    <Select onValueChange={(e) => setCollectionId(Number(e))} defaultValue={collectionId.toString()}>
+                    <Select
+                        onValueChange={(e) => setCollectionId(Number(e))}
+                        defaultValue={collectionId.toString()}
+                    >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Collection" />
                         </SelectTrigger>
                         <SelectContent>
                             {collections.map(({ id, name }) => (
-                                <SelectItem key={id} value={id.toString()}>{name}</SelectItem>
+                                <SelectItem key={id} value={id.toString()}>
+                                    {name}
+                                </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -308,6 +324,7 @@ function RouteComponent() {
                         </div>
                     </div>
                 </div>
-            </div>        </>
+            </div>{' '}
+        </>
     )
 }

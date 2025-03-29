@@ -8,7 +8,13 @@ import {
 import appCss from '@/styles/app.css?url'
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/sidebar'
-import { BoxIcon, DownloadIcon, FolderIcon, GitGraphIcon, NewspaperIcon } from 'lucide-react'
+import {
+    BoxIcon,
+    DownloadIcon,
+    FolderIcon,
+    GitGraphIcon,
+    NewspaperIcon,
+} from 'lucide-react'
 import { Header } from '@/components/header'
 import ScreenSizeIndicator from '@/components/ssi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -78,8 +84,6 @@ const CreateCollection = createServerFn()
         await db.insert(collection).values({ name: data })
     })
 
-
-
 function RootComponent() {
     return (
         <RootDocument>
@@ -106,7 +110,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             url: '/import',
             icon: DownloadIcon,
         },
-        ...collections.map(({id, name }) => ({
+        ...collections.map(({ id, name }) => ({
             title: name,
             url: `/collection/${id}`,
             icon: FolderIcon,
@@ -126,33 +130,45 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
                             <DialogTitle>
                                 Welcome to Overwatch Match Log!
                             </DialogTitle>
-                            <DialogDescription className='grid grid-rows-3 gap-4'>
-
-                                Enter the name for your first collection. This can be anything, but a common scheme is the season number. For example, "Season 12"
-                                <Input onChange={(e) => setCollectionName(e.target.value)} value={collectionName} onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        CreateCollection({ data: collectionName }).then(() => {
-                                            setDialogOpen(false)
-                                        })
+                            <DialogDescription className="grid grid-rows-3 gap-4">
+                                Enter the name for your first collection. This
+                                can be anything, but a common scheme is the
+                                season number. For example, "Season 12"
+                                <Input
+                                    onChange={(e) =>
+                                        setCollectionName(e.target.value)
                                     }
-                                }} />
+                                    value={collectionName}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            CreateCollection({
+                                                data: collectionName,
+                                            }).then(() => {
+                                                setDialogOpen(false)
+                                            })
+                                        }
+                                    }}
+                                />
                                 <Button
                                     onClick={() => {
-
-                                        CreateCollection({ data: collectionName }).then(() => {
+                                        CreateCollection({
+                                            data: collectionName,
+                                        }).then(() => {
                                             setDialogOpen(false)
                                         })
-                                    }}>Create</Button>
+                                    }}
+                                >
+                                    Create
+                                </Button>
                             </DialogDescription>
                         </DialogHeader>
                     </DialogContent>
                 </Dialog>
 
                 <QueryClientProvider client={queryClient}>
-                    <SidebarProvider defaultOpen={false} >
+                    <SidebarProvider defaultOpen={false}>
                         <AppSidebar items={sidebarLinks} />
                         <main className="w-full h-screen flex flex-col">
-
                             {children}
                         </main>
                         <Toaster />

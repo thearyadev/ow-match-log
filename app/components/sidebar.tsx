@@ -18,9 +18,14 @@ interface SidebarItem {
 }
 
 export function AppSidebar({ items }: { items: SidebarItem[] }) {
-    const {setOpen} = useSidebar()
+    const { setOpen } = useSidebar()
     return (
-        <Sidebar collapsible='icon' variant='floating' onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+        <Sidebar
+            collapsible="icon"
+            variant="floating"
+            onMouseEnter={() => setOpen(true)}
+            onMouseLeave={() => setOpen(false)}
+        >
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupContent>

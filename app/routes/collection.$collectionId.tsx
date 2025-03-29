@@ -3,7 +3,17 @@ import 'react-tooltip/dist/react-tooltip.css'
 import { createServerFn } from '@tanstack/react-start'
 import { collection, match as matchTable } from '@/db/schema'
 import { db } from '@/db'
-import { gte, sql, count, desc, avg, eq, ne, and, SQLWrapper } from 'drizzle-orm'
+import {
+    gte,
+    sql,
+    count,
+    desc,
+    avg,
+    eq,
+    ne,
+    and,
+    SQLWrapper,
+} from 'drizzle-orm'
 import {
     Card,
     CardContent,
@@ -17,8 +27,12 @@ import { Suspense } from 'react'
 import { BarChart } from '@/components/charts/barChart'
 import { Maps } from '@/lib/maps'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-
+import {
+    createColumnHelper,
+    flexRender,
+    getCoreRowModel,
+    useReactTable,
+} from '@tanstack/react-table'
 
 const getLastYearOfDataGroupedByDay = createServerFn()
     .validator((data: { collectionId?: number }) => data)
@@ -45,7 +59,8 @@ const getLastYearOfDataGroupedByDay = createServerFn()
         }
 
         const filters: SQLWrapper[] = []
-        if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
         filters.push(gte(matchTable.matchTimestamp, cutoffString))
         const data = await db
             .select({
@@ -70,7 +85,8 @@ const getLastYearOfDataGroupedByDay = createServerFn()
         return dataMapped
     })
 
-const getActivityLoader = createServerFn().validator((data: { collectionId?: number }) => data)
+const getActivityLoader = createServerFn()
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const today = new Date()
         const todayString = today.toISOString().split('T')[0]
@@ -84,10 +100,12 @@ const getActivityLoader = createServerFn().validator((data: { collectionId?: num
         ]
     })
 
-const getMapCount = createServerFn().validator((data: { collectionId?: number }) => data)
+const getMapCount = createServerFn()
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const filters: SQLWrapper[] = []
-        if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
         const data = await db
             .select({
                 mapName: matchTable.mapName,
@@ -103,10 +121,12 @@ const getMapCount = createServerFn().validator((data: { collectionId?: number })
         }
     })
 
-const getMapWinPercentage = createServerFn().validator((data: { collectionId?: number }) => data)
+const getMapWinPercentage = createServerFn()
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const filters: SQLWrapper[] = []
-        if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
         const data = await db
             .select({
                 mapName: matchTable.mapName,
@@ -126,10 +146,12 @@ const getMapWinPercentage = createServerFn().validator((data: { collectionId?: n
         }
     })
 
-const getTotalMatches = createServerFn().validator((data: { collectionId?: number }) => data)
+const getTotalMatches = createServerFn()
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const filters: SQLWrapper[] = []
-        if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
         filters.push(ne(matchTable.result, 'draw'))
         const data = await db
             .select({
@@ -141,7 +163,8 @@ const getTotalMatches = createServerFn().validator((data: { collectionId?: numbe
         return data[0].count
     })
 
-const getWinrateByDayOfWeek = createServerFn().validator((data: { collectionId?: number }) => data)
+const getWinrateByDayOfWeek = createServerFn()
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const daysOfWeekWr = {
             0: {
@@ -181,7 +204,8 @@ const getWinrateByDayOfWeek = createServerFn().validator((data: { collectionId?:
             },
         }
         const filters: SQLWrapper[] = []
-        if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
         filters.push(ne(matchTable.result, 'draw'))
         const data = await db
             .select({
@@ -191,7 +215,6 @@ const getWinrateByDayOfWeek = createServerFn().validator((data: { collectionId?:
             .from(matchTable)
             .where(and(...filters))
             .execute()
-
 
         data.forEach(({ matchTimestamp, result }) => {
             const date = new Date(matchTimestamp)
@@ -207,10 +230,12 @@ const getWinrateByDayOfWeek = createServerFn().validator((data: { collectionId?:
         }
     })
 
-const getAverageMatchDuration = createServerFn().validator((data: { collectionId?: number }) => data)
+const getAverageMatchDuration = createServerFn()
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const filters: SQLWrapper[] = []
-        if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
         const data = await db
             .select({
                 matchDuration: avg(matchTable.duration),
@@ -218,16 +243,18 @@ const getAverageMatchDuration = createServerFn().validator((data: { collectionId
             .from(matchTable)
             .where(and(...filters))
             .execute()
-        const matchDurationSeconds =  data[0].matchDuration
+        const matchDurationSeconds = data[0].matchDuration
         if (matchDurationSeconds === null) return 0
         const matchDurationMinutes = Number(matchDurationSeconds) / 60
         return matchDurationMinutes
     })
 
-const getDrawRate = createServerFn().validator((data: { collectionId?: number }) => data)
+const getDrawRate = createServerFn()
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const filters: SQLWrapper[] = []
-        if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
         const data = await db
             .select({ resultType: matchTable.result, value: count() })
             .from(matchTable)
@@ -241,10 +268,12 @@ const getDrawRate = createServerFn().validator((data: { collectionId?: number })
         return (draws?.value / (wins?.value + loss?.value)) * 100
     })
 
-const getMapTypeWinrate = createServerFn().validator((data: { collectionId?: number }) => data)
+const getMapTypeWinrate = createServerFn()
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const filters: SQLWrapper[] = []
-        if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
         const data = await db
             .select({
                 mapName: matchTable.mapName,
@@ -275,23 +304,34 @@ const getMapTypeWinrate = createServerFn().validator((data: { collectionId?: num
     })
 
 const getMatches = createServerFn({ method: 'GET' })
-   .validator((data: { collectionId?: number }) => data)
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const filters: SQLWrapper[] = []
-        if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
-        return db.select().from(matchTable).orderBy(desc(matchTable.id)).where(and(...filters)).all()
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
+        return db
+            .select()
+            .from(matchTable)
+            .orderBy(desc(matchTable.id))
+            .where(and(...filters))
+            .all()
     })
 
 function validateCollectionId(collectionId: string) {
-    if (collectionId === "all") return undefined
-    if (isNaN(Number(collectionId))) throw new Error("Invalid collection id")
+    if (collectionId === 'all') return undefined
+    if (isNaN(Number(collectionId))) throw new Error('Invalid collection id')
     return Number(collectionId)
 }
 
-const getCollection = createServerFn({ method: 'GET' }).validator((data: { collectionId?: number }) => data)
+const getCollection = createServerFn({ method: 'GET' })
+    .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         if (collectionId === undefined) return undefined
-        const collectionQueried = await db.select().from(collection).where(eq(collection.id, collectionId)).execute()
+        const collectionQueried = await db
+            .select()
+            .from(collection)
+            .where(eq(collection.id, collectionId))
+            .execute()
         return collectionQueried[0]
     })
 
@@ -299,18 +339,40 @@ export const Route = createFileRoute('/collection/$collectionId')({
     component: RouteComponent,
     loader: async ({ params: { collectionId } }) => {
         return {
-            collection: await getCollection({ data: { collectionId: validateCollectionId(collectionId) } }),
-            matches: getMatches({ data: { collectionId: validateCollectionId(collectionId) } }),
-            lastYearOfDataGroupedByDay: getLastYearOfDataGroupedByDay({ data: { collectionId: validateCollectionId(collectionId) } }),
-            lastYearOfDataGroupedByDayLoader: await getActivityLoader({ data: { collectionId: validateCollectionId(collectionId) } }),
-            winrateByDayOfWeek: getWinrateByDayOfWeek({ data: { collectionId: validateCollectionId(collectionId) } }),
-            mapCount: getMapCount({ data: { collectionId: validateCollectionId(collectionId) } }),
-            mapWinPercentage: getMapWinPercentage({ data: { collectionId: validateCollectionId(collectionId) } }),
+            collection: await getCollection({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            matches: getMatches({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            lastYearOfDataGroupedByDay: getLastYearOfDataGroupedByDay({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            lastYearOfDataGroupedByDayLoader: await getActivityLoader({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            winrateByDayOfWeek: getWinrateByDayOfWeek({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            mapCount: getMapCount({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            mapWinPercentage: getMapWinPercentage({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
             mapTypeCount: null,
-            totalMatches: getTotalMatches({ data: { collectionId: validateCollectionId(collectionId) } }),
-            averageMatchDuration: getAverageMatchDuration({ data: { collectionId: validateCollectionId(collectionId) } }),
-            drawRate: getDrawRate({ data: { collectionId: validateCollectionId(collectionId) } }),
-            mapTypeWinrate: getMapTypeWinrate({ data: { collectionId: validateCollectionId(collectionId) } }),
+            totalMatches: getTotalMatches({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            averageMatchDuration: getAverageMatchDuration({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            drawRate: getDrawRate({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            mapTypeWinrate: getMapTypeWinrate({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
         }
     },
 })
@@ -370,9 +432,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                            header.column.columnDef.header,
-                                            header.getContext(),
-                                        )}
+                                              header.column.columnDef.header,
+                                              header.getContext(),
+                                          )}
                                 </th>
                             ))}
                         </tr>
@@ -400,9 +462,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                            header.column.columnDef.footer,
-                                            header.getContext(),
-                                        )}
+                                              header.column.columnDef.footer,
+                                              header.getContext(),
+                                          )}
                                 </th>
                             ))}
                         </tr>
@@ -426,21 +488,20 @@ function RouteComponent() {
         drawRate,
         mapTypeWinrate,
         matches,
-        collection
+        collection,
     } = Route.useLoaderData()
     return (
         <Tabs defaultValue="Statistics" className="p-3">
-
             <div className="flex items-center gap-4">
-
-                {collection !== undefined ? <h1 className="text-3xl">Collection: {collection.name}</h1>: null}
-            <TabsList className="w-[400px]">
-                <TabsTrigger value="Statistics">Statistics</TabsTrigger>
-                <TabsTrigger value="Data">Data</TabsTrigger>
-            </TabsList>
+                {collection !== undefined ? (
+                    <h1 className="text-3xl">Collection: {collection.name}</h1>
+                ) : null}
+                <TabsList className="w-[400px]">
+                    <TabsTrigger value="Statistics">Statistics</TabsTrigger>
+                    <TabsTrigger value="Data">Data</TabsTrigger>
+                </TabsList>
             </div>
             <TabsContent value="Statistics">
-
                 <div className="grid grid-cols-1 gap-3">
                     <div className="grid grid-cols-1 xl:grid-cols-4 gap-3">
                         <div className="col-span-1 xl:col-span-3">
@@ -498,11 +559,7 @@ function RouteComponent() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
-                                <Suspense
-                                    fallback={
-                                        <div>Loading...</div>
-                                    }
-                                >
+                                <Suspense fallback={<div>Loading...</div>}>
                                     <Await
                                         promise={mapWinPercentage}
                                         children={(data) => (
@@ -550,7 +607,7 @@ function RouteComponent() {
                                         promise={averageMatchDuration}
                                         children={(data) => (
                                             <div className="text-center text-4xl font-extrabold">
-                                                {data?.toFixed(2)} minutes 
+                                                {data?.toFixed(2)} minutes
                                             </div>
                                         )}
                                     ></Await>
@@ -579,7 +636,9 @@ function RouteComponent() {
                         <Card className="col-span-2">
                             <CardHeader>
                                 <CardTitle>Map Type Winrate</CardTitle>
-                                <CardDescription>Winrate by map type</CardDescription>
+                                <CardDescription>
+                                    Winrate by map type
+                                </CardDescription>
                             </CardHeader>
                             <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
                                 <Suspense fallback={<div>Loading...</div>}>
@@ -610,7 +669,5 @@ function RouteComponent() {
                 </Suspense>
             </TabsContent>
         </Tabs>
-
     )
 }
-

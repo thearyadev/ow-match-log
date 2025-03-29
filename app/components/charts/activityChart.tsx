@@ -24,7 +24,7 @@ type ActivityChartProps = {
 
 export function ActivityChart(props: ActivityChartProps) {
     return (
-        <Card >
+        <Card>
             <CardHeader>
                 <CardTitle>Match History</CardTitle>
                 <CardDescription>

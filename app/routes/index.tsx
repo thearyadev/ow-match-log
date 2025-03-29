@@ -5,12 +5,11 @@ export const Route = createFileRoute('/')({
     component: Home,
     beforeLoad: () => {
         throw redirect({
-            // @ts-ignore : dynamic route. 
-            to: "/collection/all",
+            // @ts-ignore : dynamic route.
+            to: '/collection/all',
             permanent: true,
         })
-    }
+    },
 })
 
-function Home() {
-}
+function Home() {}
