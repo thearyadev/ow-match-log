@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({
@@ -6,6 +5,6 @@ export default defineConfig({
     schema: './app/db/schema.ts',
     dialect: 'sqlite',
     dbCredentials: {
-        url: 'file:owml.db',
+        url: `file:${process.env.DB_FILE_PATH}`,
     },
 })

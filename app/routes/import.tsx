@@ -22,6 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import OpenAI from 'openai'
 
 const GetCollections = createServerFn().handler(async () => {
     const data = await db.select().from(collection).execute()
@@ -119,7 +120,9 @@ async function preprocessImage(imageUrl: string): Promise<string> {
 }
 
 async function getOpenAiCompletion(ocrText: string) {
-    const client = getOpenAiClient()
+    const client = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+    })
     const completion = await client.beta.chat.completions.parse({
         model,
         messages: [
@@ -144,7 +147,7 @@ Requirements:
 const execAwaitable = promisify(exec)
 async function runOcrPython(imageUrl: string) {
     const buffer = convertImageUrlToBuffer(imageUrl)
-    const imagePath = path.join(os.tmpdir(), 'image.jpg')
+    const imagePath = path.join(os.tmpdir(), `image.${Math.random()}.jpg`)
     await sharp(buffer).toFile(imagePath)
     const { stdout } = await execAwaitable(
         `cd ./ocr && uv run main.py "${imagePath}"`,

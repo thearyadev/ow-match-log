@@ -37,6 +37,7 @@ const GetCollections = createServerFn().handler(async () => {
     const data = await db.select().from(collection).execute()
     return data
 })
+
 export default function RootLayout({ children }) {
     return (
         <html lang="en">
