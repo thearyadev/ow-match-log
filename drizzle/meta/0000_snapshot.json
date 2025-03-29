@@ -1,7 +1,7 @@
 {
     "version": "6",
     "dialect": "sqlite",
-    "id": "b06cd7ff-db98-407f-b40d-b6b59fd0aba3",
+    "id": "2e28907f-70a4-410d-b173-eca251364332",
     "prevId": "00000000-0000-0000-0000-000000000000",
     "tables": {
         "match": {
@@ -44,7 +44,7 @@
                 },
                 "duration": {
                     "name": "duration",
-                    "type": "text",
+                    "type": "integer",
                     "primaryKey": false,
                     "notNull": true,
                     "autoincrement": false

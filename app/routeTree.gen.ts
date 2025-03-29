@@ -11,122 +11,103 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as StatisticsImport } from './routes/statistics'
 import { Route as ImportImport } from './routes/import'
-import { Route as DataImport } from './routes/data'
 import { Route as IndexImport } from './routes/index'
+import { Route as CollectionCollectionIdImport } from './routes/collection.$collectionId'
 
 // Create/Update Routes
 
-const StatisticsRoute = StatisticsImport.update({
-    id: '/statistics',
-    path: '/statistics',
-    getParentRoute: () => rootRoute,
-} as any)
-
 const ImportRoute = ImportImport.update({
-    id: '/import',
-    path: '/import',
-    getParentRoute: () => rootRoute,
-} as any)
-
-const DataRoute = DataImport.update({
-    id: '/data',
-    path: '/data',
-    getParentRoute: () => rootRoute,
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const IndexRoute = IndexImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => rootRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CollectionCollectionIdRoute = CollectionCollectionIdImport.update({
+  id: '/collection/$collectionId',
+  path: '/collection/$collectionId',
+  getParentRoute: () => rootRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
-    interface FileRoutesByPath {
-        '/': {
-            id: '/'
-            path: '/'
-            fullPath: '/'
-            preLoaderRoute: typeof IndexImport
-            parentRoute: typeof rootRoute
-        }
-        '/data': {
-            id: '/data'
-            path: '/data'
-            fullPath: '/data'
-            preLoaderRoute: typeof DataImport
-            parentRoute: typeof rootRoute
-        }
-        '/import': {
-            id: '/import'
-            path: '/import'
-            fullPath: '/import'
-            preLoaderRoute: typeof ImportImport
-            parentRoute: typeof rootRoute
-        }
-        '/statistics': {
-            id: '/statistics'
-            path: '/statistics'
-            fullPath: '/statistics'
-            preLoaderRoute: typeof StatisticsImport
-            parentRoute: typeof rootRoute
-        }
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
     }
+    '/import': {
+      id: '/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof ImportImport
+      parentRoute: typeof rootRoute
+    }
+    '/collection/$collectionId': {
+      id: '/collection/$collectionId'
+      path: '/collection/$collectionId'
+      fullPath: '/collection/$collectionId'
+      preLoaderRoute: typeof CollectionCollectionIdImport
+      parentRoute: typeof rootRoute
+    }
+  }
 }
 
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-    '/': typeof IndexRoute
-    '/data': typeof DataRoute
-    '/import': typeof ImportRoute
-    '/statistics': typeof StatisticsRoute
+  '/': typeof IndexRoute
+  '/import': typeof ImportRoute
+  '/collection/$collectionId': typeof CollectionCollectionIdRoute
 }
 
 export interface FileRoutesByTo {
-    '/': typeof IndexRoute
-    '/data': typeof DataRoute
-    '/import': typeof ImportRoute
-    '/statistics': typeof StatisticsRoute
+  '/': typeof IndexRoute
+  '/import': typeof ImportRoute
+  '/collection/$collectionId': typeof CollectionCollectionIdRoute
 }
 
 export interface FileRoutesById {
-    __root__: typeof rootRoute
-    '/': typeof IndexRoute
-    '/data': typeof DataRoute
-    '/import': typeof ImportRoute
-    '/statistics': typeof StatisticsRoute
+  __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/import': typeof ImportRoute
+  '/collection/$collectionId': typeof CollectionCollectionIdRoute
 }
 
 export interface FileRouteTypes {
-    fileRoutesByFullPath: FileRoutesByFullPath
-    fullPaths: '/' | '/data' | '/import' | '/statistics'
-    fileRoutesByTo: FileRoutesByTo
-    to: '/' | '/data' | '/import' | '/statistics'
-    id: '__root__' | '/' | '/data' | '/import' | '/statistics'
-    fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/import' | '/collection/$collectionId'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/import' | '/collection/$collectionId'
+  id: '__root__' | '/' | '/import' | '/collection/$collectionId'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-    IndexRoute: typeof IndexRoute
-    DataRoute: typeof DataRoute
-    ImportRoute: typeof ImportRoute
-    StatisticsRoute: typeof StatisticsRoute
+  IndexRoute: typeof IndexRoute
+  ImportRoute: typeof ImportRoute
+  CollectionCollectionIdRoute: typeof CollectionCollectionIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-    IndexRoute: IndexRoute,
-    DataRoute: DataRoute,
-    ImportRoute: ImportRoute,
-    StatisticsRoute: StatisticsRoute,
+  IndexRoute: IndexRoute,
+  ImportRoute: ImportRoute,
+  CollectionCollectionIdRoute: CollectionCollectionIdRoute,
 }
 
 export const routeTree = rootRoute
-    ._addFileChildren(rootRouteChildren)
-    ._addFileTypes<FileRouteTypes>()
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -135,22 +116,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/data",
         "/import",
-        "/statistics"
+        "/collection/$collectionId"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/data": {
-      "filePath": "data.tsx"
-    },
     "/import": {
       "filePath": "import.tsx"
     },
-    "/statistics": {
-      "filePath": "statistics.tsx"
+    "/collection/$collectionId": {
+      "filePath": "collection.$collectionId.tsx"
     }
   }
 }
