@@ -1,0 +1,20 @@
+[project]
+name = "ocr"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "paddleocr>=2.10.0",
+    "paddlepaddle==3.0.0rc1",
+    "pillow>=11.1.0",
+    "setuptools>=78.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "rich>=13.9.4",
+]
+
+
