@@ -29,7 +29,6 @@ const GetCollections = createServerFn().handler(async () => {
     return data
 })
 
-const model = 'gpt-4o'
 export const Route = createFileRoute('/import')({
     component: RouteComponent,
     loader: async () => {
@@ -124,7 +123,7 @@ async function getOpenAiCompletion(ocrText: string) {
         apiKey: process.env.OPENAI_API_KEY,
     })
     const completion = await client.beta.chat.completions.parse({
-        model,
+        model: process.env.MODEL ?? 'gpt-4o',
         messages: [
             {
                 role: 'system',
