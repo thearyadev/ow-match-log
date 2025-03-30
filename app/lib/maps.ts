@@ -21,7 +21,7 @@ export const Maps: MapRecord = {
     Oasis: {
         mapType: 'control',
     },
-    CircuitRoyal: {
+    "Circuit Royal": {
         mapType: 'escort',
     },
     Dorado: {

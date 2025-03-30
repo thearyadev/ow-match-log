@@ -152,7 +152,6 @@ const getTotalMatches = createServerFn()
         const filters: SQLWrapper[] = []
         if (collectionId)
             filters.push(eq(matchTable.collectionId, collectionId))
-        filters.push(ne(matchTable.result, 'draw'))
         const data = await db
             .select({
                 count: count(),
