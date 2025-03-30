@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { db } from '@/db'
 import { collection, match as matchTable } from '@/db/schema'
-import { desc } from 'drizzle-orm'
+import { and, desc, eq, SQLWrapper } from 'drizzle-orm'
 import path from 'node:path'
 import os from 'node:os'
 import { exec } from 'node:child_process'
@@ -111,8 +111,8 @@ async function preprocessImage(imageUrl: string): Promise<string> {
     const resizedImage = await imageObject
         .extract({
             width: Math.round(width / 1.38),
-            height: Math.round(height / 2),
-            top: Math.round(height / 2.84),
+            height: Math.round(height / 1.9),
+            top: Math.round(height / 3.2),
             left: Math.round(width / 4.26),
         })
         .toBuffer()
@@ -169,9 +169,12 @@ async function _ProcessMatchHistory(imageUrl: string, collectionId: number) {
         throw new Error('No matches found')
     const genMatchReverse = generatedMatches.matches.reverse()
 
+    const filters: SQLWrapper[] = []
+    if (collectionId) filters.push(eq(matchTable.collectionId, collectionId))
     const last8Matches = await db
         .select()
         .from(matchTable)
+        .where(and(...filters))
         .orderBy(desc(matchTable.id))
         .limit(8)
         .execute()
