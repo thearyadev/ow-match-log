@@ -38,10 +38,12 @@ const getLastYearOfDataGroupedByDay = createServerFn()
     .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const today = new Date()
+        today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
         const todayString = today.toISOString().split('T')[0]
 
         const cutoffDate = new Date()
         cutoffDate.setFullYear(cutoffDate.getFullYear() - 1)
+        cutoffDate.setMinutes(cutoffDate.getMinutes() - cutoffDate.getTimezoneOffset())
         const cutoffString = cutoffDate.toISOString()
         const cutoffDateString = cutoffString.split('T')[0]
 
@@ -72,11 +74,15 @@ const getLastYearOfDataGroupedByDay = createServerFn()
             .groupBy(sql`DATE(${matchTable.matchTimestamp})`)
             .orderBy(sql`DATE(${matchTable.matchTimestamp})`)
 
-        let dataMapped = data.map(({ matchDate, count }) => ({
-            date: matchDate as string,
-            count: Number(count),
-            level: Number(count) > 10 ? 10 : Number(count),
-        }))
+        let dataMapped = data.map(({ matchDate, count }) => {
+            const offsetDate = new Date(matchDate as string)
+            offsetDate.setMinutes(offsetDate.getMinutes() - offsetDate.getTimezoneOffset())
+            return {
+                date: offsetDate.toISOString().split('T')[0],
+                count: Number(count),
+                level: Number(count) > 10 ? 10 : Number(count),
+            }
+        })
         if (dataMapped.length === 0) return [bounds.start, bounds.end]
         if (dataMapped[0].date !== cutoffDateString)
             dataMapped.unshift(bounds.start)
@@ -217,6 +223,7 @@ const getWinrateByDayOfWeek = createServerFn()
 
         data.forEach(({ matchTimestamp, result }) => {
             const date = new Date(matchTimestamp)
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
             const dayOfWeek = date.getDay()
             daysOfWeekWr[dayOfWeek].wins += result === 'victory' ? 1 : 0
             daysOfWeekWr[dayOfWeek].total += 1
@@ -431,9 +438,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                              header.column.columnDef.header,
-                                              header.getContext(),
-                                          )}
+                                            header.column.columnDef.header,
+                                            header.getContext(),
+                                        )}
                                 </th>
                             ))}
                         </tr>
@@ -461,9 +468,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                              header.column.columnDef.footer,
-                                              header.getContext(),
-                                          )}
+                                            header.column.columnDef.footer,
+                                            header.getContext(),
+                                        )}
                                 </th>
                             ))}
                         </tr>
