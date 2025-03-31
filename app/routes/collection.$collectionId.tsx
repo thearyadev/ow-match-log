@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/card'
 
 import { ActivityChart } from '@/components/charts/activityChart'
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { BarChart } from '@/components/charts/barChart'
 import { Maps } from '@/lib/maps'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -33,6 +33,7 @@ import {
     getCoreRowModel,
     useReactTable,
 } from '@tanstack/react-table'
+import { Button } from '@/components/ui/button'
 
 const getLastYearOfDataGroupedByDay = createServerFn()
     .validator((data: { collectionId?: number }) => data)
@@ -389,45 +390,83 @@ export const Route = createFileRoute('/collection/$collectionId')({
     },
 })
 
+const deleteRecord = createServerFn({ method: 'POST' })
+    .validator((data: { id: number }) => data)
+    .handler(async ({ data: { id } }) => {
+        await db.delete(matchTable).where(eq(matchTable.id, id)).execute()
+        return
+    })
 type Match = Awaited<ReturnType<typeof getMatches>>[0]
-const columnHelper = createColumnHelper<Match>()
-const defaultColumns = [
-    columnHelper.accessor('id', {
-        header: () => 'ID',
-        cell: (props) => <div>{props.getValue()}</div>,
-    }),
-    columnHelper.accessor('mapName', {
-        header: () => 'Map',
-        cell: (props) => <div>{props.getValue()}</div>,
-    }),
-    columnHelper.accessor('result', {
-        header: () => 'Result',
-        cell: (props) => <div>{props.getValue()}</div>,
-    }),
-    columnHelper.accessor('scoreSelf', {
-        header: () => 'Score Self',
-        cell: (props) => <div>{props.getValue()}</div>,
-    }),
-    columnHelper.accessor('scoreOpponent', {
-        header: () => 'Score Opponent',
-        cell: (props) => <div>{props.getValue()}</div>,
-    }),
-    columnHelper.accessor('duration', {
-        header: () => 'Duration',
-        cell: (props) => <div>{props.getValue()}</div>,
-    }),
-    columnHelper.accessor('matchTimestamp', {
-        header: () => 'Match Timestamp',
-        cell: (props) => <div>{props.getValue()}</div>,
-    }),
-    columnHelper.accessor('matchType', {
-        header: () => 'Match Type',
-        cell: (props) => <div>{props.getValue()}</div>,
-    }),
-]
+interface MatchWithDeletionId extends Match {
+    deletionId: number
+}
+const columnHelper = createColumnHelper<MatchWithDeletionId>()
+
 function MatchTable({ matches }: { matches: Match[] }) {
-    const columns = defaultColumns
-    const data = matches
+    const [data, setData] = React.useState(
+        matches.map((match) => ({ ...match, deletionId: match.id })),
+    )
+
+    const columns = React.useMemo(
+        () => [
+            columnHelper.accessor('id', {
+                header: () => 'ID',
+                cell: (props) => <div>{props.getValue()}</div>,
+            }),
+            columnHelper.accessor('mapName', {
+                header: () => 'Map',
+                cell: (props) => <div>{props.getValue()}</div>,
+            }),
+            columnHelper.accessor('result', {
+                header: () => 'Result',
+                cell: (props) => <div>{props.getValue()}</div>,
+            }),
+            columnHelper.accessor('scoreSelf', {
+                header: () => 'Score Self',
+                cell: (props) => <div>{props.getValue()}</div>,
+            }),
+            columnHelper.accessor('scoreOpponent', {
+                header: () => 'Score Opponent',
+                cell: (props) => <div>{props.getValue()}</div>,
+            }),
+            columnHelper.accessor('duration', {
+                header: () => 'Duration',
+                cell: (props) => <div>{props.getValue()}</div>,
+            }),
+            columnHelper.accessor('matchTimestamp', {
+                header: () => 'Match Timestamp',
+                cell: (props) => <div>{props.getValue()}</div>,
+            }),
+            columnHelper.accessor('matchType', {
+                header: () => 'Match Type',
+                cell: (props) => <div>{props.getValue()}</div>,
+            }),
+            columnHelper.accessor('deletionId', {
+                header: () => '',
+                cell: (props) => (
+                    <div className="flex justify-center items-center">
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                deleteRecord({
+                                    data: {
+                                        id: props.getValue(),
+                                    },
+                                }).then(() => {
+                                    const dataCopy = [...data]
+                                    dataCopy.splice(props.row.index, 1)
+                                    setData(dataCopy)
+                                })
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </div>
+                ),
+            }),
+        ],
+        [data],
+    )
     const table = useReactTable({
         data,
         columns,

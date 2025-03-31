@@ -76,13 +76,10 @@ const Match = z.object({
             'New Queen Street',
             'New Junk City',
             'Suravasa',
-            'Throne of Anubis',
-            'Hanaoka',
             'Antarctic Peninsula',
             'Runasapi',
             'Samoa',
             'Shambali Monastery',
-            'Throne of Anubis',
         ])
         .describe('name of the map. If not found use Other'),
     result: z.enum(['victory', 'defeat', 'draw']),
