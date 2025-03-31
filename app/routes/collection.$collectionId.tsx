@@ -43,7 +43,9 @@ const getLastYearOfDataGroupedByDay = createServerFn()
 
         const cutoffDate = new Date()
         cutoffDate.setFullYear(cutoffDate.getFullYear() - 1)
-        cutoffDate.setMinutes(cutoffDate.getMinutes() - cutoffDate.getTimezoneOffset())
+        cutoffDate.setMinutes(
+            cutoffDate.getMinutes() - cutoffDate.getTimezoneOffset(),
+        )
         const cutoffString = cutoffDate.toISOString()
         const cutoffDateString = cutoffString.split('T')[0]
 
@@ -77,7 +79,9 @@ const getLastYearOfDataGroupedByDay = createServerFn()
 
         let dataMapped = data.map(({ matchDate, count }) => {
             const offsetDate = new Date(matchDate as string)
-            offsetDate.setMinutes(offsetDate.getMinutes() - offsetDate.getTimezoneOffset())
+            offsetDate.setMinutes(
+                offsetDate.getMinutes() - offsetDate.getTimezoneOffset(),
+            )
             return {
                 date: offsetDate.toISOString().split('T')[0],
                 count: Number(count),
@@ -440,9 +444,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                            header.column.columnDef.header,
-                                            header.getContext(),
-                                        )}
+                                              header.column.columnDef.header,
+                                              header.getContext(),
+                                          )}
                                 </th>
                             ))}
                         </tr>
@@ -470,9 +474,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                            header.column.columnDef.footer,
-                                            header.getContext(),
-                                        )}
+                                              header.column.columnDef.footer,
+                                              header.getContext(),
+                                          )}
                                 </th>
                             ))}
                         </tr>

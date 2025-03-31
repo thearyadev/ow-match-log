@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/libsql'
-import { migrate, } from 'drizzle-orm/libsql/migrator'
+import { migrate } from 'drizzle-orm/libsql/migrator'
 
 export const db = drizzle(`file:${process.env.DB_FILE_PATH}`)
 
@@ -11,4 +11,3 @@ export async function runMigration() {
         console.error('Migration failed 🚨:', error)
     }
 }
-

@@ -39,6 +39,13 @@
         }
     },
     "files": {
-        "ignore": [".next/**", "package.json", "app/styles/app.css", "ocr/**"]
+        "ignore": [
+            ".next/**",
+            "package.json",
+            "app/styles/app.css",
+            "ocr/**",
+            ".vinxi/**",
+            ".output/**"
+        ]
     }
 }

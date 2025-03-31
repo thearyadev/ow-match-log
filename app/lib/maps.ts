@@ -21,7 +21,7 @@ export const Maps: MapRecord = {
     Oasis: {
         mapType: 'control',
     },
-    "Circuit Royal": {
+    'Circuit Royal': {
         mapType: 'escort',
     },
     Dorado: {
@@ -78,7 +78,7 @@ export const Maps: MapRecord = {
     Suravasa: {
         mapType: 'flashpoint',
     },
-    "Antarctic Peninsula": {
+    'Antarctic Peninsula': {
         mapType: 'control',
     },
     Runasapi: {
@@ -87,7 +87,7 @@ export const Maps: MapRecord = {
     Samoa: {
         mapType: 'control',
     },
-    "Shambali Monastery": {
+    'Shambali Monastery': {
         mapType: 'escort',
     },
 }
