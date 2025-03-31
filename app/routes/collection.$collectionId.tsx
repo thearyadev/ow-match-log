@@ -73,6 +73,7 @@ const getLastYearOfDataGroupedByDay = createServerFn()
             .where(and(...filters))
             .groupBy(sql`DATE(${matchTable.matchTimestamp})`)
             .orderBy(sql`DATE(${matchTable.matchTimestamp})`)
+        console.log(data)
 
         let dataMapped = data.map(({ matchDate, count }) => {
             const offsetDate = new Date(matchDate as string)
@@ -88,6 +89,7 @@ const getLastYearOfDataGroupedByDay = createServerFn()
             dataMapped.unshift(bounds.start)
         if (dataMapped[dataMapped.length - 1].date !== todayString)
             dataMapped.push(bounds.end)
+        console.log(dataMapped)
         return dataMapped
     })
 

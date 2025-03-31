@@ -84,7 +84,7 @@ const Match = z.object({
     timeSinceMatch: z
         .string()
         .describe(
-            'time since the match was played. A string containing a number and a plural unit of time, separated by a single space. Examples: 20 seconds, 2 hours, 21 minutes, 1 days, a moment ago',
+            'time since the match was played. A string containing a number and a plural unit of time, separated by a single space. Examples: 20 seconds ago, 2 hours ago, 21 minutes ago, 1 days ago, a moment ago.',
         ),
     matchType: z.enum(['competitive', 'unranked', 'arcade', 'custom game']),
 })
@@ -115,6 +115,8 @@ async function preprocessImage(imageUrl: string): Promise<string> {
             left: Math.round(width / 4.26),
         })
         .toBuffer()
+    const im2 = await imageObject.toFile("./t2.jpeg")
+
     return `data:image/jpeg;base64,${resizedImage.toString('base64')}`
 }
 
@@ -127,7 +129,7 @@ async function getOpenAiCompletion(ocrText: string) {
         messages: [
             {
                 role: 'system',
-                content: `You are provided with a messy OCR extraction of an Overwatch 2 match history. This text may include extraneous information, OCR misinterpretations, or irrelevant data. Your task is to convert this unstructured and error-prone OCR output into a clean, structured format that accurately represents the match history details.
+                content: `You are provided with a messy OCR extraction of an Overwatch 2 match history. This text may include extraneous information, OCR misinterpretations, or irrelevant data. Your task is to convert this unstructured and error-prone OCR output into a clean, structured format that accurately represents the match history details. The "timeSinceMatch" will be a sentence like string denoting the time since the match was played, and will end with "ago". The matchDuration is a timestamp. MM:SS.
 Requirements:
 1. Disregard any irrelevant or garbled text that does not contribute to the match history.
 2. Follow these instructions strictly and avoid adding extra commentary or explanations outside the structured data output.`,
@@ -140,6 +142,7 @@ Requirements:
         response_format: zodResponseFormat(MatchHistory, 'matchHistory'),
     })
     console.log(completion.usage)
+    console.log(completion.choices[0].message.parsed)
     return completion.choices[0].message.parsed
 }
 
@@ -151,6 +154,7 @@ async function runOcrPython(imageUrl: string) {
     const { stdout } = await execAwaitable(
         `cd ./ocr && uv run main.py "${imagePath}"`,
     )
+    console.log(stdout)
     return stdout
 }
 
