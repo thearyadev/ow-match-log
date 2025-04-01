@@ -484,9 +484,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                              header.column.columnDef.header,
-                                              header.getContext(),
-                                          )}
+                                            header.column.columnDef.header,
+                                            header.getContext(),
+                                        )}
                                 </th>
                             ))}
                         </tr>
@@ -514,9 +514,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                              header.column.columnDef.footer,
-                                              header.getContext(),
-                                          )}
+                                            header.column.columnDef.footer,
+                                            header.getContext(),
+                                        )}
                                 </th>
                             ))}
                         </tr>
@@ -580,52 +580,50 @@ function RouteComponent() {
                             </CardContent>
                         </Card>
                     </div>
-                    <div className="grid grid-cols-1: xl:grid-cols-2 gap-3">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Map Occurrences</CardTitle>
-                                <CardDescription>
-                                    Count of maps in match history.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
-                                <Suspense fallback={<LoadingSpinner />}>
-                                    <Await
-                                        promise={mapCount}
-                                        children={(data) => (
-                                            <BarChart
-                                                data={data}
-                                                seriesName="Map Count"
-                                                percents={false}
-                                            />
-                                        )}
-                                    ></Await>
-                                </Suspense>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Map Winrate</CardTitle>
-                                <CardDescription>
-                                    Win Percentage for all maps
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
-                                <Suspense fallback={<LoadingSpinner />}>
-                                    <Await
-                                        promise={mapWinPercentage}
-                                        children={(data) => (
-                                            <BarChart
-                                                data={data}
-                                                seriesName="Win Rate"
-                                                percents
-                                            />
-                                        )}
-                                    ></Await>
-                                </Suspense>
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Map Occurrences</CardTitle>
+                            <CardDescription>
+                                Count of maps in match history.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Await
+                                    promise={mapCount}
+                                    children={(data) => (
+                                        <BarChart
+                                            data={data}
+                                            seriesName="Map Count"
+                                            percents={false}
+                                        />
+                                    )}
+                                ></Await>
+                            </Suspense>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Map Winrate</CardTitle>
+                            <CardDescription>
+                                Win Percentage for all maps
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Await
+                                    promise={mapWinPercentage}
+                                    children={(data) => (
+                                        <BarChart
+                                            data={data}
+                                            seriesName="Win Rate"
+                                            percents
+                                        />
+                                    )}
+                                ></Await>
+                            </Suspense>
+                        </CardContent>
+                    </Card>
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
                         <Card className="col-span-1 xl:col-span-2">
                             <CardHeader>
