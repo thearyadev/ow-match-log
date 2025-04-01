@@ -21,6 +21,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
+import { LoadingSpinner } from '@/components/loadingSpinner'
 
 import { ActivityChart } from '@/components/charts/activityChart'
 import React, { Suspense } from 'react'
@@ -483,9 +484,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                              header.column.columnDef.header,
-                                              header.getContext(),
-                                          )}
+                                            header.column.columnDef.header,
+                                            header.getContext(),
+                                        )}
                                 </th>
                             ))}
                         </tr>
@@ -513,9 +514,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                              header.column.columnDef.footer,
-                                              header.getContext(),
-                                          )}
+                                            header.column.columnDef.footer,
+                                            header.getContext(),
+                                        )}
                                 </th>
                             ))}
                         </tr>
@@ -566,7 +567,7 @@ function RouteComponent() {
                                 <CardTitle>Total Matches Played</CardTitle>
                             </CardHeader>
                             <CardContent className="flex justify-center items-center h-full">
-                                <Suspense fallback={<div>Loading...</div>}>
+                                <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={totalMatches}
                                         children={(data) => (
@@ -588,7 +589,7 @@ function RouteComponent() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
-                                <Suspense fallback={<div>Loading...</div>}>
+                                <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={mapCount}
                                         children={(data) => (
@@ -610,7 +611,7 @@ function RouteComponent() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
-                                <Suspense fallback={<div>Loading...</div>}>
+                                <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={mapWinPercentage}
                                         children={(data) => (
@@ -634,7 +635,7 @@ function RouteComponent() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
-                                <Suspense fallback={<div>Loading...</div>}>
+                                <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={winrateByDayOfWeek}
                                         children={(data) => (
@@ -653,7 +654,7 @@ function RouteComponent() {
                                 <CardTitle>Average Match Duration</CardTitle>
                             </CardHeader>
                             <CardContent className="flex justify-center items-center h-full pb-4">
-                                <Suspense fallback={<div>Loading...</div>}>
+                                <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={averageMatchDuration}
                                         children={(data) => (
@@ -672,7 +673,7 @@ function RouteComponent() {
                                 <CardTitle>Draw Rate</CardTitle>
                             </CardHeader>
                             <CardContent className="flex justify-center items-center h-full">
-                                <Suspense fallback={<div>Loading...</div>}>
+                                <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={drawRate}
                                         children={(data) => (
@@ -692,7 +693,7 @@ function RouteComponent() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
-                                <Suspense fallback={<div>Loading...</div>}>
+                                <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={mapTypeWinrate}
                                         children={(data) => (
@@ -710,14 +711,19 @@ function RouteComponent() {
                 </div>
             </TabsContent>
             <TabsContent value="Data">
-                <Suspense fallback={<p>Loading...</p>}>
-                    <Await
-                        promise={matches}
-                        children={(matches) => {
-                            return <MatchTable matches={matches} />
-                        }}
-                    />
-                </Suspense>
+                    <div>
+                        <Suspense fallback={
+                        <div className="py-40 flex justify-center items-center">
+
+                                <LoadingSpinner />
+                        </div>
+                        }>
+                            <Await
+                                promise={matches}
+                                children={(resolvedMatches) => <MatchTable matches={resolvedMatches} />}
+                            />
+                        </Suspense>
+                    </div>
             </TabsContent>
         </Tabs>
     )

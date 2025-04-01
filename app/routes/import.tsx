@@ -583,7 +583,7 @@ function DialogComponent({
                 }
             >
                 <DialogHeader className="text-center ">
-                    <DialogTitle className="text-lg font-semibold text-center py-1">
+                    <DialogTitle className="text-lg font-semibold text-center py-3">
                         {state === DIALOG_STATE.LOADING && (
                             <h1>Processing...</h1>
                         )}
@@ -591,7 +591,7 @@ function DialogComponent({
                             <h1>Something went wrong</h1>
                         )}
                         {state === DIALOG_STATE.SUCCESS && (
-                            <h1>Match successfully imported!</h1>
+                            <h1>Matches successfully imported!</h1>
                         )}
                     </DialogTitle>
                 </DialogHeader>
@@ -662,7 +662,7 @@ function DialogComponent({
                                     )}
                                 </TabsContent>
                             </Tabs>
-                            <div>
+                            <div className=''>
                                 <Button
                                     variant="destructive"
                                     className="w-full"

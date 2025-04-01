@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { LoadingSpinner } from './loadingSpinner'
 
 type ForceClientProps = {
     children: React.ReactNode
@@ -16,7 +17,7 @@ export default function ForceClient({ children }: ForceClientProps) {
     }, [])
 
     if (!mounted) {
-        return <div>Loading...</div>
+        return <LoadingSpinner />
     }
 
     return <>{children}</>
