@@ -111,11 +111,6 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             url: '/import',
             icon: DownloadIcon,
         },
-        ...collections.map(({ id, name }) => ({
-            title: name,
-            url: `/collection/${id}`,
-            icon: FolderIcon,
-        })),
     ]
 
     return (
@@ -168,7 +163,10 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 
                 <QueryClientProvider client={queryClient}>
                     <SidebarProvider defaultOpen={false}>
-                        <AppSidebar items={sidebarLinks} />
+                        <AppSidebar
+                            items={sidebarLinks}
+                            collections={collections}
+                        />
                         <main className="w-full h-screen flex flex-col">
                             {children}
                         </main>

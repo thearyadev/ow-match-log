@@ -484,9 +484,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                            header.column.columnDef.header,
-                                            header.getContext(),
-                                        )}
+                                              header.column.columnDef.header,
+                                              header.getContext(),
+                                          )}
                                 </th>
                             ))}
                         </tr>
@@ -514,9 +514,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                            header.column.columnDef.footer,
-                                            header.getContext(),
-                                        )}
+                                              header.column.columnDef.footer,
+                                              header.getContext(),
+                                          )}
                                 </th>
                             ))}
                         </tr>
@@ -711,19 +711,22 @@ function RouteComponent() {
                 </div>
             </TabsContent>
             <TabsContent value="Data">
-                    <div>
-                        <Suspense fallback={
-                        <div className="py-40 flex justify-center items-center">
-
+                <div>
+                    <Suspense
+                        fallback={
+                            <div className="py-40 flex justify-center items-center">
                                 <LoadingSpinner />
-                        </div>
-                        }>
-                            <Await
-                                promise={matches}
-                                children={(resolvedMatches) => <MatchTable matches={resolvedMatches} />}
-                            />
-                        </Suspense>
-                    </div>
+                            </div>
+                        }
+                    >
+                        <Await
+                            promise={matches}
+                            children={(resolvedMatches) => (
+                                <MatchTable matches={resolvedMatches} />
+                            )}
+                        />
+                    </Suspense>
+                </div>
             </TabsContent>
         </Tabs>
     )

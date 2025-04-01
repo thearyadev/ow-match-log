@@ -662,7 +662,7 @@ function DialogComponent({
                                     )}
                                 </TabsContent>
                             </Tabs>
-                            <div className=''>
+                            <div className="">
                                 <Button
                                     variant="destructive"
                                     className="w-full"

@@ -1,10 +1,11 @@
-import { TypeIcon } from 'lucide-react'
+import { TypeIcon, GroupIcon } from 'lucide-react'
 
 import {
     Sidebar,
     SidebarContent,
     SidebarGroup,
     SidebarGroupContent,
+    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -17,7 +18,10 @@ interface SidebarItem {
     icon: typeof TypeIcon
 }
 
-export function AppSidebar({ items }: { items: SidebarItem[] }) {
+export function AppSidebar({
+    items,
+    collections,
+}: { items: SidebarItem[]; collections: { id: number; name: string }[] }) {
     const { setOpen } = useSidebar()
     return (
         <Sidebar
@@ -36,6 +40,24 @@ export function AppSidebar({ items }: { items: SidebarItem[] }) {
                                         <a href={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>
+                                        </a>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+
+                <SidebarGroup className="h-full overflow-y-scroll">
+                    <SidebarGroupContent>
+                        <SidebarGroupLabel>Collections</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {collections.map((item) => (
+                                <SidebarMenuItem key={item.id}>
+                                    <SidebarMenuButton asChild>
+                                        <a href={`/collection/${item.id}`}>
+                                            <GroupIcon />
+                                            <span>{item.name}</span>
                                         </a>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
