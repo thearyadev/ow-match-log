@@ -332,7 +332,9 @@ async function _ProcessMatchHistory(
                     text: ocrText,
                 },
                 llmGeneration: {
-                    matches: generatedMatches,
+                    matches: {
+                        matches: dedupedMatches,
+                    },
                 },
                 dbInsertion: {
                     error: `Error converting generated time to seconds: ${eTimeConversion.message}`,
@@ -362,7 +364,9 @@ async function _ProcessMatchHistory(
                     text: ocrText,
                 },
                 llmGeneration: {
-                    matches: generatedMatches,
+                    matches: {
+                        matches: dedupedMatches,
+                    },
                 },
                 dbInsertion: {
                     error: `Error inserting match: ${eInsertionError?.message} || lastInsertRowid is undefined`,
@@ -380,7 +384,9 @@ async function _ProcessMatchHistory(
             text: ocrText,
         },
         llmGeneration: {
-            matches: generatedMatches,
+            matches: {
+                matches: dedupedMatches,
+            },
         },
         dbInsertion: {
             ids: insertedIds,
@@ -555,7 +561,15 @@ function getDialogState(result: ProcessResult) {
     return null
 }
 
-function DialogComponent({ openDialog, setOpenDialog, result }) {
+function DialogComponent({
+    openDialog,
+    setOpenDialog,
+    result,
+}: {
+    openDialog: boolean
+    setOpenDialog: (open: boolean) => void
+    result: ProcessResult
+}) {
     const state = getDialogState(result)
 
     return (
