@@ -1,4 +1,5 @@
 import { TypeIcon, GroupIcon } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 
 import {
     Sidebar,
@@ -37,10 +38,10 @@ export function AppSidebar({
                             {items.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
-                                        <a href={item.url}>
+                                        <Link to={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
@@ -55,10 +56,11 @@ export function AppSidebar({
                             {collections.map((item) => (
                                 <SidebarMenuItem key={item.id}>
                                     <SidebarMenuButton asChild>
-                                        <a href={`/collection/${item.id}`}>
+                                        {/* @ts-ignore */}
+                                        <Link to={`/collection/${item.id}`}>
                                             <GroupIcon />
                                             <span>{item.name}</span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
