@@ -35,6 +35,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LoadingSpinner } from '@/components/loadingSpinner'
 import { Button } from '@/components/ui/button'
+import clsx from 'clsx'
 
 const GetCollections = createServerFn().handler(async () => {
     const data = await db.select().from(collection).execute()
@@ -465,6 +466,7 @@ function RouteComponent() {
                 openDialog={openDialog}
                 setOpenDialog={setOpenDialog}
                 result={result}
+                setResult={setResult}
             />
             <div className="flex-grow flex justify-center overflow-y-hidden p-4">
                 <div className="h-full w-full flex flex-col gap-3">
@@ -565,15 +567,22 @@ function DialogComponent({
     openDialog,
     setOpenDialog,
     result,
+    setResult,
 }: {
     openDialog: boolean
     setOpenDialog: (open: boolean) => void
     result: ProcessResult
+    setResult: (result: ProcessResult) => void
 }) {
     const state = getDialogState(result)
 
+    const closeDialog = () => {
+        setResult({})
+        setOpenDialog(false)
+    }
+
     return (
-        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <Dialog open={openDialog} onOpenChange={closeDialog}>
             <DialogContent
                 className=" overflow-hidden"
                 onPointerDownOutside={
@@ -674,7 +683,7 @@ function DialogComponent({
                                                     [],
                                             },
                                         }).then(() => {
-                                            setOpenDialog(false)
+                                                closeDialog()
                                         })
                                     }}
                                 >
