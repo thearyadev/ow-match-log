@@ -683,7 +683,7 @@ function DialogComponent({
                                                     [],
                                             },
                                         }).then(() => {
-                                                closeDialog()
+                                            closeDialog()
                                         })
                                     }}
                                 >

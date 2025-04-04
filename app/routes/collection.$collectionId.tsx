@@ -35,6 +35,9 @@ import {
     useReactTable,
 } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
+import { group } from 'console'
+import { BoxPlot } from '@/components/charts/boxPlot'
+import percentile from 'percentile'
 
 const getLastYearOfDataGroupedByDay = createServerFn()
     .validator((data: { collectionId?: number }) => data)
@@ -317,6 +320,45 @@ const getMapTypeWinrate = createServerFn()
         }
     })
 
+const getBoxPlotData = createServerFn({ method: 'GET' })
+    .validator((data: { collectionId?: number }) => data)
+    .handler(async ({ data: { collectionId } }) => {
+        const filters: SQLWrapper[] = []
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
+        const data = await db
+            .select({
+                mapName: matchTable.mapName,
+                duration: matchTable.duration,
+            })
+            .from(matchTable)
+            .where(and(...filters))
+            .execute()
+
+        const groupedByMap = data.reduce(
+            (acc, curr) => {
+                const mapName = curr.mapName
+                if (!acc[mapName]) {
+                    acc[mapName] = []
+                }
+                acc[mapName].push(curr.duration)
+                return acc
+            },
+            {} as Record<string, number[]>,
+        )
+        const result: Record<string, number[]> = {}
+        for (const mapName in groupedByMap) {
+            const values = groupedByMap[mapName]
+            const q3 = percentile(75, values) as number
+            const q1 = percentile(25, values) as number
+            const median = percentile(50, values) as number
+            const minimum = Math.min(...values)
+            const maximum = Math.max(...values)
+            result[mapName] = [minimum, q1, median, q3, maximum]
+        }
+        return result
+    })
+
 const getMatches = createServerFn({ method: 'GET' })
     .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
@@ -385,6 +427,9 @@ export const Route = createFileRoute('/collection/$collectionId')({
                 data: { collectionId: validateCollectionId(collectionId) },
             }),
             mapTypeWinrate: getMapTypeWinrate({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            mapBoxPlotData: getBoxPlotData({
                 data: { collectionId: validateCollectionId(collectionId) },
             }),
         }
@@ -484,9 +529,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                            header.column.columnDef.header,
-                                            header.getContext(),
-                                        )}
+                                              header.column.columnDef.header,
+                                              header.getContext(),
+                                          )}
                                 </th>
                             ))}
                         </tr>
@@ -514,9 +559,9 @@ function MatchTable({ matches }: { matches: Match[] }) {
                                     {header.isPlaceholder
                                         ? null
                                         : flexRender(
-                                            header.column.columnDef.footer,
-                                            header.getContext(),
-                                        )}
+                                              header.column.columnDef.footer,
+                                              header.getContext(),
+                                          )}
                                 </th>
                             ))}
                         </tr>
@@ -541,6 +586,7 @@ function RouteComponent() {
         mapTypeWinrate,
         matches,
         collection,
+        mapBoxPlotData,
     } = Route.useLoaderData()
     return (
         <Tabs defaultValue="Statistics" className="p-3">
@@ -706,6 +752,24 @@ function RouteComponent() {
                             </CardContent>
                         </Card>
                     </div>
+                    <Card className="">
+                        <CardHeader>
+                            <CardTitle>Map Duration Boxplot</CardTitle>
+                            <CardDescription>
+                                Boxplot of map durations
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Await
+                                    promise={mapBoxPlotData}
+                                    children={(data) => (
+                                        <BoxPlot data={data} seriesName="idk" />
+                                    )}
+                                ></Await>
+                            </Suspense>
+                        </CardContent>
+                    </Card>
                 </div>
             </TabsContent>
             <TabsContent value="Data">

@@ -83,6 +83,9 @@ importers:
       openai:
         specifier: ^4.89.1
         version: 4.89.1(ws@8.18.1)(zod@3.24.2)
+      percentile:
+        specifier: ^1.6.0
+        version: 1.6.0
       postcss:
         specifier: ^8.5.3
         version: 8.5.3
@@ -3551,6 +3554,9 @@ packages:
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
+
+  percentile@1.6.0:
+    resolution: {integrity: sha512-8vSyjdzwxGDHHwH+cSGch3A9Uj2On3UpgOWxWXMKwUvoAbnujx6DaqmV1duWXNiH/oEWpyVd6nSQccix6DM3Ng==}
 
   perfect-debounce@1.0.0:
     resolution: {integrity: sha512-xCy9V055GLEqoFaHoC1SoLIaLmWctgCUaBaWxDZ7/Zx4CTyX7cJQLJOok/orfjZAh9kEYpjJa4d0KcJmCbctZA==}
@@ -7695,6 +7701,8 @@ snapshots:
   pathe@1.1.2: {}
 
   pathe@2.0.3: {}
+
+  percentile@1.6.0: {}
 
   perfect-debounce@1.0.0: {}
 
