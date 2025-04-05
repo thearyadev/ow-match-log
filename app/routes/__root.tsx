@@ -106,11 +106,6 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             url: '/collection/all',
             icon: BoxIcon,
         },
-        {
-            title: 'Import',
-            url: '/import',
-            icon: DownloadIcon,
-        },
     ]
 
     return (

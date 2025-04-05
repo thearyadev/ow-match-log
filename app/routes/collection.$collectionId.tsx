@@ -34,6 +34,7 @@ import {
     getCollection,
 } from '@/actions'
 import { MatchTable } from '@/components/matchTable'
+import { Import } from '@/components/import'
 
 export const Route = createFileRoute('/collection/$collectionId')({
     component: RouteComponent,
@@ -81,6 +82,7 @@ function RouteComponent() {
                 <TabsList className="w-[400px]">
                     <TabsTrigger value="Statistics">Statistics</TabsTrigger>
                     <TabsTrigger value="Data">Data</TabsTrigger>
+                    <TabsTrigger value="Import">Import</TabsTrigger>
                 </TabsList>
             </div>
             <TabsContent value="Statistics">
@@ -365,6 +367,18 @@ function RouteComponent() {
                         />
                     </Suspense>
                 </div>
+            </TabsContent>
+
+            <TabsContent value="Import" className="flex flex-grow h-full">
+                {data.collection !== undefined ? (
+                    <Import collectionId={data.collection.id} />
+                ) : (
+                    <div>
+                        <h1 className="text-3xl">
+                            Select a collection to import matches
+                        </h1>
+                    </div>
+                )}
             </TabsContent>
         </Tabs>
     )

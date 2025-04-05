@@ -1,45 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
-import React, { useCallback, useState } from 'react'
-import { createServerFn } from '@tanstack/react-start'
+import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { cn } from '@/lib/utils'
-import { db } from '@/db'
-import { collection } from '@/db/schema'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
 import { type ProcessResult, ProcessMatchHistory } from '@/actions'
 import DialogComponent from '@/components/processingDialog'
 
-const GetCollections = createServerFn().handler(async () => {
-    const data = await db.select().from(collection).execute()
-    return data
-})
-
-export const Route = createFileRoute('/import')({
-    component: RouteComponent,
-    loader: async () => {
-        return {
-            collections: await GetCollections(),
-        }
-    },
-})
-
-function RouteComponent() {
-    const { collections } = Route.useLoaderData()
-    const [inputDisabled, setInputDisabled] = useState(false)
-    const [collectionId, setCollectionId] = useState(collections[0].id)
-
+export function Import({ collectionId }: { collectionId: number }) {
     const [openDialog, setOpenDialog] = useState(false)
-
     const [result, setResult] = useState<ProcessResult>({})
-
     const onDrop = useCallback((accepedFiles: File[]) => {
-        setInputDisabled(true)
         const [file] = accepedFiles
         if (!file) return
         const reader = new FileReader()
@@ -70,23 +38,8 @@ function RouteComponent() {
                 result={result}
                 setResult={setResult}
             />
-            <div className="flex-grow flex justify-center overflow-y-hidden p-4">
+            <div className="justify-center overflow-y-hidden p-4 w-full">
                 <div className="h-full w-full flex flex-col gap-3">
-                    <Select
-                        onValueChange={(e) => setCollectionId(Number(e))}
-                        defaultValue={collectionId.toString()}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Collection" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {collections.map(({ id, name }) => (
-                                <SelectItem key={id} value={id.toString()}>
-                                    {name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
                     <div className="w-full flex flex-grow">
                         <div
                             {...getRootProps()}
