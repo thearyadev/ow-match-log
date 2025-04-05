@@ -1,19 +1,5 @@
 import { Await, createFileRoute } from '@tanstack/react-router'
 import 'react-tooltip/dist/react-tooltip.css'
-import { createServerFn } from '@tanstack/react-start'
-import { collection, match as matchTable } from '@/db/schema'
-import { db } from '@/db'
-import {
-    gte,
-    sql,
-    count,
-    desc,
-    avg,
-    eq,
-    ne,
-    and,
-    SQLWrapper,
-} from 'drizzle-orm'
 import {
     Card,
     CardContent,
@@ -24,733 +10,73 @@ import {
 import { LoadingSpinner } from '@/components/loadingSpinner'
 
 import { ActivityChart } from '@/components/charts/activityChart'
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 import { BarChart } from '@/components/charts/barChart'
-import { Maps } from '@/lib/maps'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-    createColumnHelper,
-    flexRender,
-    getCoreRowModel,
-    useReactTable,
-} from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
-import { group } from 'console'
 import { BoxPlot } from '@/components/charts/boxPlot'
-import percentile from 'percentile'
-
-const getLastYearOfDataGroupedByDay = createServerFn()
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const today = new Date()
-        today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
-        const todayString = today.toISOString().split('T')[0]
-
-        const cutoffDate = new Date()
-        cutoffDate.setFullYear(cutoffDate.getFullYear() - 1)
-        cutoffDate.setMinutes(
-            cutoffDate.getMinutes() - cutoffDate.getTimezoneOffset(),
-        )
-        const cutoffString = cutoffDate.toISOString()
-        const cutoffDateString = cutoffString.split('T')[0]
-
-        const bounds = {
-            start: {
-                date: cutoffDateString,
-                count: 0,
-                level: 0,
-            },
-            end: {
-                date: todayString,
-                count: 0,
-                level: 0,
-            },
-        }
-
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        filters.push(gte(matchTable.matchTimestamp, cutoffString))
-        const data = await db
-            .select({
-                matchDate: sql`DATE(${matchTable.matchTimestamp})`,
-                count: sql`COUNT(*)`,
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .groupBy(sql`DATE(${matchTable.matchTimestamp})`)
-            .orderBy(sql`DATE(${matchTable.matchTimestamp})`)
-        console.log(data)
-
-        let dataMapped = data.map(({ matchDate, count }) => {
-            const offsetDate = new Date(matchDate as string)
-            offsetDate.setMinutes(
-                offsetDate.getMinutes() - offsetDate.getTimezoneOffset(),
-            )
-            return {
-                date: offsetDate.toISOString().split('T')[0],
-                count: Number(count),
-                level: Number(count) > 10 ? 10 : Number(count),
-            }
-        })
-        if (dataMapped.length === 0) return [bounds.start, bounds.end]
-        if (dataMapped[0].date !== cutoffDateString)
-            dataMapped.unshift(bounds.start)
-        if (dataMapped[dataMapped.length - 1].date !== todayString)
-            dataMapped.push(bounds.end)
-        console.log(dataMapped)
-        return dataMapped
-    })
-
-const getActivityLoader = createServerFn()
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const today = new Date()
-        const todayString = today.toISOString().split('T')[0]
-        const cutoffDate = new Date()
-        cutoffDate.setFullYear(cutoffDate.getFullYear() - 1)
-        const cutoffString = cutoffDate.toISOString()
-
-        return [
-            { date: cutoffString, count: 0, level: 0 },
-            { date: todayString, count: 0, level: 0 },
-        ]
-    })
-
-const getMapCount = createServerFn()
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        const data = await db
-            .select({
-                mapName: matchTable.mapName,
-                count: count(),
-            })
-            .from(matchTable)
-            .orderBy(desc(count()))
-            .where(and(...filters))
-            .groupBy(matchTable.mapName)
-        return {
-            labels: data.map(({ mapName }) => mapName),
-            values: data.map(({ count }) => Number(count)),
-        }
-    })
-
-const getMapWinPercentage = createServerFn()
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        const data = await db
-            .select({
-                mapName: matchTable.mapName,
-                totalCount: count(),
-                winCount: count(sql`CASE WHEN result = 'victory' THEN 1 END`),
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .groupBy(matchTable.mapName)
-            .execute()
-
-        return {
-            labels: data.map(({ mapName }) => mapName),
-            values: data.map(
-                ({ winCount, totalCount }) => (winCount / totalCount) * 100,
-            ),
-        }
-    })
-
-const getTotalMatches = createServerFn()
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        const data = await db
-            .select({
-                count: count(),
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .execute()
-        return data[0].count
-    })
-
-const getWinrateByDayOfWeek = createServerFn()
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const daysOfWeekWr = {
-            0: {
-                name: 'Sunday',
-                wins: 0,
-                total: 0,
-            },
-            1: {
-                name: 'Monday',
-                wins: 0,
-                total: 0,
-            },
-            2: {
-                name: 'Tuesday',
-                wins: 0,
-                total: 0,
-            },
-            3: {
-                name: 'Wednesday',
-                wins: 0,
-                total: 0,
-            },
-            4: {
-                name: 'Thursday',
-                wins: 0,
-                total: 0,
-            },
-            5: {
-                name: 'Friday',
-                wins: 0,
-                total: 0,
-            },
-            6: {
-                name: 'Saturday',
-                wins: 0,
-                total: 0,
-            },
-        }
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        filters.push(ne(matchTable.result, 'draw'))
-        const data = await db
-            .select({
-                matchTimestamp: matchTable.matchTimestamp,
-                result: matchTable.result,
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .execute()
-
-        data.forEach(({ matchTimestamp, result }) => {
-            const date = new Date(matchTimestamp)
-            date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
-            const dayOfWeek = date.getDay()
-            daysOfWeekWr[dayOfWeek].wins += result === 'victory' ? 1 : 0
-            daysOfWeekWr[dayOfWeek].total += 1
-        })
-        return {
-            labels: Object.values(daysOfWeekWr).map(({ name }) => name),
-            values: Object.values(daysOfWeekWr).map(
-                ({ wins, total }) => (wins / total) * 100 || 0,
-            ),
-        }
-    })
-
-const getAverageMatchDuration = createServerFn()
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        const data = await db
-            .select({
-                matchDuration: avg(matchTable.duration),
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .execute()
-        const matchDurationSeconds = data[0].matchDuration
-        if (matchDurationSeconds === null) return 0
-        const matchDurationMinutes = Number(matchDurationSeconds) / 60
-        return matchDurationMinutes
-    })
-
-const getDrawRate = createServerFn()
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        const data = await db
-            .select({ resultType: matchTable.result, value: count() })
-            .from(matchTable)
-            .where(and(...filters))
-            .groupBy(matchTable.result)
-            .execute()
-        const [draws] = data.filter(({ resultType }) => resultType === 'draw')
-        const [wins] = data.filter(({ resultType }) => resultType === 'victory')
-        const [loss] = data.filter(({ resultType }) => resultType === 'defeat')
-
-        return (draws?.value / (wins?.value + loss?.value)) * 100
-    })
-
-const getMapTypeWinrate = createServerFn()
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        const data = await db
-            .select({
-                mapName: matchTable.mapName,
-                result: matchTable.result,
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .execute()
-        const buckets = {
-            escort: [0, 0],
-            control: [0, 0],
-            flashpoint: [0, 0],
-            hybrid: [0, 0],
-            push: [0, 0],
-        }
-        data.forEach(({ mapName, result }) => {
-            const mapInfo = Maps[mapName]
-            if (!mapInfo) throw new Error(`Map ${mapName} not found`)
-            buckets[mapInfo.mapType][result === 'victory' ? 0 : 1] += 1
-            buckets[mapInfo.mapType][1] += 1
-        })
-        return {
-            labels: Object.keys(buckets),
-            values: Object.values(buckets).map(
-                ([wins, total]) => (wins / total) * 100,
-            ),
-        }
-    })
-
-const getMapGroupedMatchDurationBoxPlotData = createServerFn({ method: 'GET' })
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        const data = await db
-            .select({
-                mapName: matchTable.mapName,
-                duration: matchTable.duration,
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .execute()
-
-        const groupedByMap = data.reduce(
-            (acc, curr) => {
-                const mapName = curr.mapName
-                if (!acc[mapName]) {
-                    acc[mapName] = []
-                }
-                acc[mapName].push(curr.duration)
-                return acc
-            },
-            {} as Record<string, number[]>,
-        )
-        const result: Record<string, number[]> = {}
-        for (const mapName in groupedByMap) {
-            const values = groupedByMap[mapName].map((v) => {
-                try {
-                    return v / 60
-                } catch (e) {
-                    return v
-                }
-            })
-            const q3 = percentile(75, values) as number
-            const q1 = percentile(25, values) as number
-            const median = percentile(50, values) as number
-            const minimum = Math.min(...values)
-            const maximum = Math.max(...values)
-            result[mapName] = [minimum, q1, median, q3, maximum]
-        }
-        return result
-    })
-const getMapTypeGroupedMatchDurationBoxPlotData = createServerFn({
-    method: 'GET',
-})
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        const data = await db
-            .select({
-                mapName: matchTable.mapName,
-                duration: matchTable.duration,
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .execute()
-
-        const groupedByMapType = data.reduce(
-            (acc, curr) => {
-                const mapName = curr.mapName
-                const mapType = Maps[mapName].mapType
-                if (!acc[mapType]) {
-                    acc[mapType] = []
-                }
-                acc[mapType].push(curr.duration)
-                return acc
-            },
-            {} as Record<string, number[]>,
-        )
-        const result: Record<string, number[]> = {}
-        for (const mapName in groupedByMapType) {
-            const values = groupedByMapType[mapName].map((v) => {
-                try {
-                    return v / 60
-                } catch (e) {
-                    return v
-                }
-            })
-            const q3 = percentile(75, values) as number
-            const q1 = percentile(25, values) as number
-            const median = percentile(50, values) as number
-            const minimum = Math.min(...values)
-            const maximum = Math.max(...values)
-            result[mapName] = [minimum, q1, median, q3, maximum]
-        }
-        return result
-    })
-const getResultGroupedMatchDurationBoxPlotData = createServerFn({
-    method: 'GET',
-})
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        const data = await db
-            .select({
-                duration: matchTable.duration,
-                result: matchTable.result,
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .execute()
-
-        const groupedByResult = data.reduce(
-            (acc, curr) => {
-                if (!acc[curr.result]) {
-                    acc[curr.result] = []
-                }
-                acc[curr.result].push(curr.duration)
-                return acc
-            },
-            {} as Record<string, number[]>,
-        )
-        const result: Record<string, number[]> = {}
-        for (const mapName in groupedByResult) {
-            const values = groupedByResult[mapName].map((v) => {
-                try {
-                    return v / 60
-                } catch (e) {
-                    return v
-                }
-            })
-            const q3 = percentile(75, values) as number
-            const q1 = percentile(25, values) as number
-            const median = percentile(50, values) as number
-            const minimum = Math.min(...values)
-            const maximum = Math.max(...values)
-            result[mapName] = [minimum, q1, median, q3, maximum]
-        }
-        return result
-    })
-
-const getWinrate = createServerFn({ method: 'GET' })
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        filters.push(ne(matchTable.result, 'draw'))
-        const data = await db
-            .select({
-                wins: count(sql`CASE WHEN result = 'victory' THEN 1 END`),
-                total: count(),
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .execute()
-        const winrate = data[0].wins / data[0].total
-        return winrate
-    })
-
-const getWinrateLast7Days = createServerFn({ method: 'GET' })
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        filters.push(
-            sql`date(${matchTable.matchTimestamp}) >= date('now', '-7 days')`,
-        )
-        filters.push(ne(matchTable.result, 'draw'))
-        const data = await db
-            .select({
-                wins: count(sql`CASE WHEN result = 'victory' THEN 1 END`),
-                total: count(),
-            })
-            .from(matchTable)
-            .where(and(...filters))
-            .execute()
-        const winrate = data[0].wins / data[0].total
-        return winrate
-    })
-
-const getMatches = createServerFn({ method: 'GET' })
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        const filters: SQLWrapper[] = []
-        if (collectionId)
-            filters.push(eq(matchTable.collectionId, collectionId))
-        return db
-            .select()
-            .from(matchTable)
-            .orderBy(desc(matchTable.id))
-            .where(and(...filters))
-            .all()
-    })
-
-function validateCollectionId(collectionId: string) {
-    if (collectionId === 'all') return undefined
-    if (isNaN(Number(collectionId))) throw new Error('Invalid collection id')
-    return Number(collectionId)
-}
-
-const getCollection = createServerFn({ method: 'GET' })
-    .validator((data: { collectionId?: number }) => data)
-    .handler(async ({ data: { collectionId } }) => {
-        if (collectionId === undefined) return undefined
-        const collectionQueried = await db
-            .select()
-            .from(collection)
-            .where(eq(collection.id, collectionId))
-            .execute()
-        return collectionQueried[0]
-    })
+import {
+    getLastYearOfDataGroupedByDay,
+    getActivityLoader,
+    getMapCount,
+    getMapWinPercentage,
+    getTotalMatches,
+    getWinrateByDayOfWeek,
+    getAverageMatchDuration,
+    getDrawRate,
+    getMapTypeWinrate,
+    getMapGroupedMatchDurationBoxPlotData,
+    getMapTypeGroupedMatchDurationBoxPlotData,
+    getResultGroupedMatchDurationBoxPlotData,
+    getWinrate,
+    getWinrateLast7Days,
+    getMatches,
+    validateCollectionId,
+    getCollection,
+} from '@/actions'
+import { MatchTable } from '@/components/matchTable'
 
 export const Route = createFileRoute('/collection/$collectionId')({
     component: RouteComponent,
     loader: async ({ params: { collectionId } }) => {
+        const args = {
+            data: { collectionId: validateCollectionId(collectionId) },
+        }
+        const [collection, lastYearOfDataGroupedByDayLoader] =
+            await Promise.all([getCollection(args), getActivityLoader(args)])
         return {
-            collection: await getCollection({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            matches: getMatches({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            lastYearOfDataGroupedByDay: getLastYearOfDataGroupedByDay({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            lastYearOfDataGroupedByDayLoader: await getActivityLoader({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            winrateByDayOfWeek: getWinrateByDayOfWeek({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            mapCount: getMapCount({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            mapWinPercentage: getMapWinPercentage({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
+            collection,
+            lastYearOfDataGroupedByDayLoader,
+            matches: getMatches(args),
+            lastYearOfDataGroupedByDay: getLastYearOfDataGroupedByDay(args),
+            winrateByDayOfWeek: getWinrateByDayOfWeek(args),
+            mapCount: getMapCount(args),
+            mapWinPercentage: getMapWinPercentage(args),
             mapTypeCount: null,
-            totalMatches: getTotalMatches({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            averageMatchDuration: getAverageMatchDuration({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            drawRate: getDrawRate({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            mapTypeWinrate: getMapTypeWinrate({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
+            totalMatches: getTotalMatches(args),
+            averageMatchDuration: getAverageMatchDuration(args),
+            drawRate: getDrawRate(args),
+            mapTypeWinrate: getMapTypeWinrate(args),
             mapGroupedMatchDurationBoxPlotData:
-                getMapGroupedMatchDurationBoxPlotData({
-                    data: { collectionId: validateCollectionId(collectionId) },
-                }),
+                getMapGroupedMatchDurationBoxPlotData(args),
             mapTypeGroupedMatchDurationBoxPlotData:
-                getMapTypeGroupedMatchDurationBoxPlotData({
-                    data: { collectionId: validateCollectionId(collectionId) },
-                }),
+                getMapTypeGroupedMatchDurationBoxPlotData(args),
             resultGroupedMatchDurationBoxPlotData:
-                getResultGroupedMatchDurationBoxPlotData({
-                    data: { collectionId: validateCollectionId(collectionId) },
-                }),
-            winrate: getWinrate({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
-            winrateLast7Days: getWinrateLast7Days({
-                data: { collectionId: validateCollectionId(collectionId) },
-            }),
+                getResultGroupedMatchDurationBoxPlotData(args),
+            winrate: getWinrate(args),
+            winrateLast7Days: getWinrateLast7Days(args),
         }
     },
 })
 
-const deleteRecord = createServerFn({ method: 'POST' })
-    .validator((data: { id: number }) => data)
-    .handler(async ({ data: { id } }) => {
-        await db.delete(matchTable).where(eq(matchTable.id, id)).execute()
-        return
-    })
-type Match = Awaited<ReturnType<typeof getMatches>>[0]
-interface MatchWithDeletionId extends Match {
-    deletionId: number
-}
-const columnHelper = createColumnHelper<MatchWithDeletionId>()
-
-function MatchTable({ matches }: { matches: Match[] }) {
-    const [data, setData] = React.useState(
-        matches.map((match) => ({ ...match, deletionId: match.id })),
-    )
-
-    const columns = React.useMemo(
-        () => [
-            columnHelper.accessor('id', {
-                header: () => 'ID',
-                cell: (props) => <div>{props.getValue()}</div>,
-            }),
-            columnHelper.accessor('mapName', {
-                header: () => 'Map',
-                cell: (props) => <div>{props.getValue()}</div>,
-            }),
-            columnHelper.accessor('result', {
-                header: () => 'Result',
-                cell: (props) => <div>{props.getValue()}</div>,
-            }),
-            columnHelper.accessor('scoreSelf', {
-                header: () => 'Score Self',
-                cell: (props) => <div>{props.getValue()}</div>,
-            }),
-            columnHelper.accessor('scoreOpponent', {
-                header: () => 'Score Opponent',
-                cell: (props) => <div>{props.getValue()}</div>,
-            }),
-            columnHelper.accessor('duration', {
-                header: () => 'Duration',
-                cell: (props) => <div>{props.getValue()}</div>,
-            }),
-            columnHelper.accessor('matchTimestamp', {
-                header: () => 'Match Timestamp',
-                cell: (props) => <div>{props.getValue()}</div>,
-            }),
-            columnHelper.accessor('matchType', {
-                header: () => 'Match Type',
-                cell: (props) => <div>{props.getValue()}</div>,
-            }),
-            columnHelper.accessor('deletionId', {
-                header: () => '',
-                cell: (props) => (
-                    <div className="flex justify-center items-center">
-                        <Button
-                            variant="destructive"
-                            onClick={() => {
-                                deleteRecord({
-                                    data: {
-                                        id: props.getValue(),
-                                    },
-                                }).then(() => {
-                                    const dataCopy = [...data]
-                                    dataCopy.splice(props.row.index, 1)
-                                    setData(dataCopy)
-                                })
-                            }}
-                        >
-                            Delete
-                        </Button>
-                    </div>
-                ),
-            }),
-        ],
-        [data],
-    )
-    const table = useReactTable({
-        data,
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-    })
-    return (
-        <div className="w-full h-screen">
-            <table className="w-full ">
-                <thead className="">
-                    {table.getHeaderGroups().map((headerGroup) => (
-                        <tr key={headerGroup.id}>
-                            {headerGroup.headers.map((header) => (
-                                <th key={header.id}>
-                                    {header.isPlaceholder
-                                        ? null
-                                        : flexRender(
-                                              header.column.columnDef.header,
-                                              header.getContext(),
-                                          )}
-                                </th>
-                            ))}
-                        </tr>
-                    ))}
-                </thead>
-                <tbody className="">
-                    {table.getRowModel().rows.map((row) => (
-                        <tr key={row.id}>
-                            {row.getVisibleCells().map((cell) => (
-                                <td key={cell.id}>
-                                    {flexRender(
-                                        cell.column.columnDef.cell,
-                                        cell.getContext(),
-                                    )}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-                <tfoot>
-                    {table.getFooterGroups().map((footerGroup) => (
-                        <tr key={footerGroup.id}>
-                            {footerGroup.headers.map((header) => (
-                                <th key={header.id}>
-                                    {header.isPlaceholder
-                                        ? null
-                                        : flexRender(
-                                              header.column.columnDef.footer,
-                                              header.getContext(),
-                                          )}
-                                </th>
-                            ))}
-                        </tr>
-                    ))}
-                </tfoot>
-            </table>
-            <div className="h-4" />
-        </div>
-    )
-}
-
 function RouteComponent() {
-    const {
-        lastYearOfDataGroupedByDay,
-        lastYearOfDataGroupedByDayLoader,
-        mapCount,
-        mapWinPercentage,
-        totalMatches,
-        winrateByDayOfWeek,
-        averageMatchDuration,
-        drawRate,
-        mapTypeWinrate,
-        matches,
-        collection,
-        mapGroupedMatchDurationBoxPlotData,
-        mapTypeGroupedMatchDurationBoxPlotData,
-        resultGroupedMatchDurationBoxPlotData,
-        winrate,
-        winrateLast7Days,
-    } = Route.useLoaderData()
+    const data = Route.useLoaderData()
     return (
         <Tabs defaultValue="Statistics" className="p-3">
             <div className="flex items-center gap-4">
-                {collection !== undefined ? (
-                    <h1 className="text-3xl">Collection: {collection.name}</h1>
+                {data.collection !== undefined ? (
+                    <h1 className="text-3xl">
+                        Collection: {data.collection.name}
+                    </h1>
                 ) : null}
                 <TabsList className="w-[400px]">
                     <TabsTrigger value="Statistics">Statistics</TabsTrigger>
@@ -762,8 +88,10 @@ function RouteComponent() {
                     <div className="grid grid-cols-1 xl:grid-cols-4 gap-3">
                         <div className="col-span-1 xl:col-span-3">
                             <ActivityChart
-                                dataPromise={lastYearOfDataGroupedByDay}
-                                dataLoading={lastYearOfDataGroupedByDayLoader}
+                                dataPromise={data.lastYearOfDataGroupedByDay}
+                                dataLoading={
+                                    data.lastYearOfDataGroupedByDayLoader
+                                }
                             />
                         </div>
                         <Card>
@@ -773,7 +101,7 @@ function RouteComponent() {
                             <CardContent className="flex justify-center items-center h-full">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
-                                        promise={totalMatches}
+                                        promise={data.totalMatches}
                                         children={(data) => (
                                             <div className="text-center text-4xl font-extrabold pb-4">
                                                 {data}
@@ -792,7 +120,7 @@ function RouteComponent() {
                             <CardContent className="flex justify-center items-center h-full">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
-                                        promise={winrate}
+                                        promise={data.winrate}
                                         children={(data) => (
                                             <div className="text-center text-4xl font-extrabold pb-4">
                                                 {(data * 100).toFixed(2)}%
@@ -809,7 +137,7 @@ function RouteComponent() {
                             <CardContent className="flex justify-center items-center h-full">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
-                                        promise={winrateLast7Days}
+                                        promise={data.winrateLast7Days}
                                         children={(data) => (
                                             <div className="text-center text-4xl font-extrabold pb-4">
                                                 {(data * 100).toFixed(2)}%
@@ -830,7 +158,7 @@ function RouteComponent() {
                         <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Await
-                                    promise={mapCount}
+                                    promise={data.mapCount}
                                     children={(data) => (
                                         <BarChart
                                             data={data}
@@ -852,7 +180,7 @@ function RouteComponent() {
                         <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Await
-                                    promise={mapWinPercentage}
+                                    promise={data.mapWinPercentage}
                                     children={(data) => (
                                         <BarChart
                                             data={data}
@@ -875,7 +203,7 @@ function RouteComponent() {
                             <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
-                                        promise={winrateByDayOfWeek}
+                                        promise={data.winrateByDayOfWeek}
                                         children={(data) => (
                                             <BarChart
                                                 data={data}
@@ -894,7 +222,7 @@ function RouteComponent() {
                             <CardContent className="flex justify-center items-center h-full pb-4">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
-                                        promise={averageMatchDuration}
+                                        promise={data.averageMatchDuration}
                                         children={(data) => (
                                             <div className="text-center text-4xl font-extrabold">
                                                 {data?.toFixed(2)} minutes
@@ -913,7 +241,7 @@ function RouteComponent() {
                             <CardContent className="flex justify-center items-center h-full">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
-                                        promise={drawRate}
+                                        promise={data.drawRate}
                                         children={(data) => (
                                             <div className="text-center text-4xl font-extrabold">
                                                 {data?.toFixed(2)}%
@@ -933,7 +261,7 @@ function RouteComponent() {
                             <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
-                                        promise={mapTypeWinrate}
+                                        promise={data.mapTypeWinrate}
                                         children={(data) => (
                                             <BarChart
                                                 data={data}
@@ -956,7 +284,9 @@ function RouteComponent() {
                         <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Await
-                                    promise={mapGroupedMatchDurationBoxPlotData}
+                                    promise={
+                                        data.mapGroupedMatchDurationBoxPlotData
+                                    }
                                     children={(data) => (
                                         <BoxPlot data={data} seriesName="idk" />
                                     )}
@@ -978,7 +308,7 @@ function RouteComponent() {
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={
-                                            mapTypeGroupedMatchDurationBoxPlotData
+                                            data.mapTypeGroupedMatchDurationBoxPlotData
                                         }
                                         children={(data) => (
                                             <BoxPlot
@@ -1003,7 +333,7 @@ function RouteComponent() {
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={
-                                            resultGroupedMatchDurationBoxPlotData
+                                            data.resultGroupedMatchDurationBoxPlotData
                                         }
                                         children={(data) => (
                                             <BoxPlot
@@ -1028,7 +358,7 @@ function RouteComponent() {
                         }
                     >
                         <Await
-                            promise={matches}
+                            promise={data.matches}
                             children={(resolvedMatches) => (
                                 <MatchTable matches={resolvedMatches} />
                             )}
