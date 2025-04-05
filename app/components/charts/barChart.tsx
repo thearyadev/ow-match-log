@@ -62,7 +62,7 @@ export function BarChart(props: BarChartProps) {
                 data: props.percents
                     ? props.data.values.map((value) => {
                           const d = {
-                              y: value,
+                              y: Math.round(value * 100) / 100,
                               color: undefined,
                           }
                           if (value < 50) {

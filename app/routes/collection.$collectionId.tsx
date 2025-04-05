@@ -268,7 +268,7 @@ function RouteComponent() {
                                             <BarChart
                                                 data={data}
                                                 seriesName="Map Count"
-                                                percents={false}
+                                                percents
                                             />
                                         )}
                                     ></Await>

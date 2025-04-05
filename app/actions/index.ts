@@ -28,6 +28,10 @@ import { tryCatch } from '@/lib/try-catch'
 import { convertImageUrlToBuffer } from '@/lib/imageProcessing'
 import { preprocessImage } from '@/lib/imageProcessing'
 
+function roundToTwoDecimals(num: number) {
+    return Math.round(num * 100) / 100
+}
+
 export const getLastYearOfDataGroupedByDay = createServerFn()
     .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
@@ -340,7 +344,7 @@ export const getMapGroupedMatchDurationBoxPlotData = createServerFn({
         for (const mapName in groupedByMap) {
             const values = groupedByMap[mapName].map((v) => {
                 try {
-                    return v / 60
+                    return roundToTwoDecimals(v / 60)
                 } catch (e) {
                     return v
                 }
@@ -388,7 +392,7 @@ export const getMapTypeGroupedMatchDurationBoxPlotData = createServerFn({
         for (const mapName in groupedByMapType) {
             const values = groupedByMapType[mapName].map((v) => {
                 try {
-                    return v / 60
+                    return roundToTwoDecimals(v / 60)
                 } catch (e) {
                     return v
                 }
@@ -434,7 +438,7 @@ export const getResultGroupedMatchDurationBoxPlotData = createServerFn({
         for (const mapName in groupedByResult) {
             const values = groupedByResult[mapName].map((v) => {
                 try {
-                    return v / 60
+                    return roundToTwoDecimals(v / 60)
                 } catch (e) {
                     return v
                 }
