@@ -285,7 +285,7 @@ export const getMapTypeWinrate = createServerFn()
                 result: matchTable.result,
             })
             .from(matchTable)
-            .where(and(...filters))
+            .where(and(...filters, ne(matchTable.result, 'draw')))
             .execute()
         const buckets = {
             escort: [0, 0],
@@ -297,7 +297,7 @@ export const getMapTypeWinrate = createServerFn()
         data.forEach(({ mapName, result }) => {
             const mapInfo = Maps[mapName]
             if (!mapInfo) throw new Error(`Map ${mapName} not found`)
-            buckets[mapInfo.mapType][result === 'victory' ? 0 : 1] += 1
+            if (result === 'victory') buckets[mapInfo.mapType][0] += 1
             buckets[mapInfo.mapType][1] += 1
         })
         return {
