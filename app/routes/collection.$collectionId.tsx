@@ -320,7 +320,7 @@ const getMapTypeWinrate = createServerFn()
         }
     })
 
-const getBoxPlotData = createServerFn({ method: 'GET' })
+const getMapGroupedMatchDurationBoxPlotData = createServerFn({ method: 'GET' })
     .validator((data: { collectionId?: number }) => data)
     .handler(async ({ data: { collectionId } }) => {
         const filters: SQLWrapper[] = []
@@ -348,7 +348,13 @@ const getBoxPlotData = createServerFn({ method: 'GET' })
         )
         const result: Record<string, number[]> = {}
         for (const mapName in groupedByMap) {
-            const values = groupedByMap[mapName]
+            const values = groupedByMap[mapName].map((v) => {
+                try {
+                    return v / 60
+                } catch (e) {
+                    return v
+                }
+            })
             const q3 = percentile(75, values) as number
             const q1 = percentile(25, values) as number
             const median = percentile(50, values) as number
@@ -357,6 +363,139 @@ const getBoxPlotData = createServerFn({ method: 'GET' })
             result[mapName] = [minimum, q1, median, q3, maximum]
         }
         return result
+    })
+const getMapTypeGroupedMatchDurationBoxPlotData = createServerFn({
+    method: 'GET',
+})
+    .validator((data: { collectionId?: number }) => data)
+    .handler(async ({ data: { collectionId } }) => {
+        const filters: SQLWrapper[] = []
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
+        const data = await db
+            .select({
+                mapName: matchTable.mapName,
+                duration: matchTable.duration,
+            })
+            .from(matchTable)
+            .where(and(...filters))
+            .execute()
+
+        const groupedByMapType = data.reduce(
+            (acc, curr) => {
+                const mapName = curr.mapName
+                const mapType = Maps[mapName].mapType
+                if (!acc[mapType]) {
+                    acc[mapType] = []
+                }
+                acc[mapType].push(curr.duration)
+                return acc
+            },
+            {} as Record<string, number[]>,
+        )
+        const result: Record<string, number[]> = {}
+        for (const mapName in groupedByMapType) {
+            const values = groupedByMapType[mapName].map((v) => {
+                try {
+                    return v / 60
+                } catch (e) {
+                    return v
+                }
+            })
+            const q3 = percentile(75, values) as number
+            const q1 = percentile(25, values) as number
+            const median = percentile(50, values) as number
+            const minimum = Math.min(...values)
+            const maximum = Math.max(...values)
+            result[mapName] = [minimum, q1, median, q3, maximum]
+        }
+        return result
+    })
+const getResultGroupedMatchDurationBoxPlotData = createServerFn({
+    method: 'GET',
+})
+    .validator((data: { collectionId?: number }) => data)
+    .handler(async ({ data: { collectionId } }) => {
+        const filters: SQLWrapper[] = []
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
+        const data = await db
+            .select({
+                duration: matchTable.duration,
+                result: matchTable.result,
+            })
+            .from(matchTable)
+            .where(and(...filters))
+            .execute()
+
+        const groupedByResult = data.reduce(
+            (acc, curr) => {
+                if (!acc[curr.result]) {
+                    acc[curr.result] = []
+                }
+                acc[curr.result].push(curr.duration)
+                return acc
+            },
+            {} as Record<string, number[]>,
+        )
+        const result: Record<string, number[]> = {}
+        for (const mapName in groupedByResult) {
+            const values = groupedByResult[mapName].map((v) => {
+                try {
+                    return v / 60
+                } catch (e) {
+                    return v
+                }
+            })
+            const q3 = percentile(75, values) as number
+            const q1 = percentile(25, values) as number
+            const median = percentile(50, values) as number
+            const minimum = Math.min(...values)
+            const maximum = Math.max(...values)
+            result[mapName] = [minimum, q1, median, q3, maximum]
+        }
+        return result
+    })
+
+const getWinrate = createServerFn({ method: 'GET' })
+    .validator((data: { collectionId?: number }) => data)
+    .handler(async ({ data: { collectionId } }) => {
+        const filters: SQLWrapper[] = []
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
+        filters.push(ne(matchTable.result, 'draw'))
+        const data = await db
+            .select({
+                wins: count(sql`CASE WHEN result = 'victory' THEN 1 END`),
+                total: count(),
+            })
+            .from(matchTable)
+            .where(and(...filters))
+            .execute()
+        const winrate = data[0].wins / data[0].total
+        return winrate
+    })
+
+const getWinrateLast7Days = createServerFn({ method: 'GET' })
+    .validator((data: { collectionId?: number }) => data)
+    .handler(async ({ data: { collectionId } }) => {
+        const filters: SQLWrapper[] = []
+        if (collectionId)
+            filters.push(eq(matchTable.collectionId, collectionId))
+        filters.push(
+            sql`date(${matchTable.matchTimestamp}) >= date('now', '-7 days')`,
+        )
+        filters.push(ne(matchTable.result, 'draw'))
+        const data = await db
+            .select({
+                wins: count(sql`CASE WHEN result = 'victory' THEN 1 END`),
+                total: count(),
+            })
+            .from(matchTable)
+            .where(and(...filters))
+            .execute()
+        const winrate = data[0].wins / data[0].total
+        return winrate
     })
 
 const getMatches = createServerFn({ method: 'GET' })
@@ -429,7 +568,22 @@ export const Route = createFileRoute('/collection/$collectionId')({
             mapTypeWinrate: getMapTypeWinrate({
                 data: { collectionId: validateCollectionId(collectionId) },
             }),
-            mapBoxPlotData: getBoxPlotData({
+            mapGroupedMatchDurationBoxPlotData:
+                getMapGroupedMatchDurationBoxPlotData({
+                    data: { collectionId: validateCollectionId(collectionId) },
+                }),
+            mapTypeGroupedMatchDurationBoxPlotData:
+                getMapTypeGroupedMatchDurationBoxPlotData({
+                    data: { collectionId: validateCollectionId(collectionId) },
+                }),
+            resultGroupedMatchDurationBoxPlotData:
+                getResultGroupedMatchDurationBoxPlotData({
+                    data: { collectionId: validateCollectionId(collectionId) },
+                }),
+            winrate: getWinrate({
+                data: { collectionId: validateCollectionId(collectionId) },
+            }),
+            winrateLast7Days: getWinrateLast7Days({
                 data: { collectionId: validateCollectionId(collectionId) },
             }),
         }
@@ -586,7 +740,11 @@ function RouteComponent() {
         mapTypeWinrate,
         matches,
         collection,
-        mapBoxPlotData,
+        mapGroupedMatchDurationBoxPlotData,
+        mapTypeGroupedMatchDurationBoxPlotData,
+        resultGroupedMatchDurationBoxPlotData,
+        winrate,
+        winrateLast7Days,
     } = Route.useLoaderData()
     return (
         <Tabs defaultValue="Statistics" className="p-3">
@@ -619,6 +777,42 @@ function RouteComponent() {
                                         children={(data) => (
                                             <div className="text-center text-4xl font-extrabold pb-4">
                                                 {data}
+                                            </div>
+                                        )}
+                                    ></Await>
+                                </Suspense>
+                            </CardContent>
+                        </Card>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Winrate</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex justify-center items-center h-full">
+                                <Suspense fallback={<LoadingSpinner />}>
+                                    <Await
+                                        promise={winrate}
+                                        children={(data) => (
+                                            <div className="text-center text-4xl font-extrabold pb-4">
+                                                {(data * 100).toFixed(2)}%
+                                            </div>
+                                        )}
+                                    ></Await>
+                                </Suspense>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Winrate (Last 7 Days)</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex justify-center items-center h-full">
+                                <Suspense fallback={<LoadingSpinner />}>
+                                    <Await
+                                        promise={winrateLast7Days}
+                                        children={(data) => (
+                                            <div className="text-center text-4xl font-extrabold pb-4">
+                                                {(data * 100).toFixed(2)}%
                                             </div>
                                         )}
                                     ></Await>
@@ -754,15 +948,15 @@ function RouteComponent() {
                     </div>
                     <Card className="">
                         <CardHeader>
-                            <CardTitle>Map Duration Boxplot</CardTitle>
+                            <CardTitle>Map Duration Boxplot, By Map</CardTitle>
                             <CardDescription>
-                                Boxplot of map durations
+                                Boxplot of match durations
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Await
-                                    promise={mapBoxPlotData}
+                                    promise={mapGroupedMatchDurationBoxPlotData}
                                     children={(data) => (
                                         <BoxPlot data={data} seriesName="idk" />
                                     )}
@@ -770,6 +964,58 @@ function RouteComponent() {
                             </Suspense>
                         </CardContent>
                     </Card>
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+                        <Card className="col-span-1 xl:col-span-2">
+                            <CardHeader>
+                                <CardTitle>
+                                    Map Duration Boxplot, By Map Type
+                                </CardTitle>
+                                <CardDescription>
+                                    Boxplot of match durations
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                                <Suspense fallback={<LoadingSpinner />}>
+                                    <Await
+                                        promise={
+                                            mapTypeGroupedMatchDurationBoxPlotData
+                                        }
+                                        children={(data) => (
+                                            <BoxPlot
+                                                data={data}
+                                                seriesName="idk"
+                                            />
+                                        )}
+                                    ></Await>
+                                </Suspense>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>
+                                    Map Duration Boxplot, By Result
+                                </CardTitle>
+                                <CardDescription>
+                                    Boxplot of match durations
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                                <Suspense fallback={<LoadingSpinner />}>
+                                    <Await
+                                        promise={
+                                            resultGroupedMatchDurationBoxPlotData
+                                        }
+                                        children={(data) => (
+                                            <BoxPlot
+                                                data={data}
+                                                seriesName="idk"
+                                            />
+                                        )}
+                                    ></Await>
+                                </Suspense>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </TabsContent>
             <TabsContent value="Data">
