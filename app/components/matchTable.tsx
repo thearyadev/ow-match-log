@@ -8,6 +8,7 @@ import {
 import React from 'react'
 import { Button } from './ui/button'
 import { XIcon } from 'lucide-react'
+import { useRouter } from '@tanstack/react-router'
 
 type Match = Awaited<ReturnType<typeof getMatches>>[0]
 
@@ -21,6 +22,7 @@ export function MatchTable({ matches }: { matches: Match[] }) {
     const [data, setData] = React.useState(
         matches.map((match) => ({ ...match, deletionId: match.id })),
     )
+    const router = useRouter()
 
     const columns = React.useMemo(
         () => [

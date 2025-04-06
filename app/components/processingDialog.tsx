@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/loadingSpinner'
 import { type ProcessResult, deleteRecords } from '@/actions'
+import { useRouter } from '@tanstack/react-router'
 
 const DIALOG_STATE = {
     LOADING: 'loading',

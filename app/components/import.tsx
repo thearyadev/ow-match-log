@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone'
 import { cn } from '@/lib/utils'
 import { type ProcessResult, ProcessMatchHistory } from '@/actions'
 import DialogComponent from '@/components/processingDialog'
+import { useRouter } from '@tanstack/react-router'
 
 export function Import({ collectionId }: { collectionId: number }) {
     const [openDialog, setOpenDialog] = useState(false)

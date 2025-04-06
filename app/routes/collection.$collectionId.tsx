@@ -1,4 +1,4 @@
-import { Await, createFileRoute } from '@tanstack/react-router'
+import { Await, createFileRoute, useRouter } from '@tanstack/react-router'
 import 'react-tooltip/dist/react-tooltip.css'
 import {
     Card,
@@ -72,6 +72,7 @@ export const Route = createFileRoute('/collection/$collectionId')({
 
 function RouteComponent() {
     const data = Route.useLoaderData()
+    const router = useRouter()
     return (
         <Tabs defaultValue="Statistics" className="p-3">
             <div className="flex items-center gap-4 py-4 px-1.5">
@@ -81,10 +82,25 @@ function RouteComponent() {
                     </h1>
                 ) : null}
                 <TabsList className="w-[400px] h-7">
-                    <TabsTrigger value="Statistics">Statistics</TabsTrigger>
-                    <TabsTrigger value="Data">Data</TabsTrigger>
+                    <TabsTrigger
+                        value="Statistics"
+                        onClick={() => router.invalidate()}
+                    >
+                        Statistics
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="Data"
+                        onClick={() => router.invalidate()}
+                    >
+                        Data
+                    </TabsTrigger>
                     {data.collection !== undefined ? (
-                        <TabsTrigger value="Import">Import</TabsTrigger>
+                        <TabsTrigger
+                            value="Import"
+                            onClick={() => router.invalidate()}
+                        >
+                            Import
+                        </TabsTrigger>
                     ) : null}
                 </TabsList>
             </div>
