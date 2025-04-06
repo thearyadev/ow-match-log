@@ -80,7 +80,7 @@ function DialogComponent({
                 }
             >
                 <DialogHeader className="text-center ">
-                    <DialogTitle className="text-lg font-semibold text-center py-3">
+                    <DialogTitle className="text-2xl font-semibold text-center py-3">
                         {state === DIALOG_STATE.LOADING && (
                             <h1>Processing...</h1>
                         )}
@@ -120,10 +120,16 @@ function DialogComponent({
                                             {result.image.error}
                                         </p>
                                     ) : (
-                                        <img
-                                            src={result.image?.url}
-                                            className="max-h-full max-w-full object-contain"
-                                        />
+                                        <a
+                                            href={result.image?.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                        >
+                                            <img
+                                                src={result.image?.url}
+                                                className="max-h-full max-w-full object-contain"
+                                            />
+                                        </a>
                                     )}
                                 </TabsContent>
                                 <TabsContent
@@ -158,26 +164,34 @@ function DialogComponent({
                                         </pre>
                                     )}
                                 </TabsContent>
-                            </Tabs>
-                            <div className="">
-                                <Button
-                                    variant="destructive"
-                                    className="w-full"
-                                    onClick={() => {
-                                        deleteRecords({
-                                            data: {
-                                                ids:
-                                                    result.dbInsertion?.ids ??
-                                                    [],
-                                            },
-                                        }).then(() => {
+                                <div className="grid grid-cols-4 gap-2">
+                                    <Button
+                                        className="w-full col-span-3"
+                                        onClick={() => {
                                             closeDialog()
-                                        })
-                                    }}
-                                >
-                                    Revert
-                                </Button>
-                            </div>
+                                        }}
+                                    >
+                                        Looks Good
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        className="w-full"
+                                        onClick={() => {
+                                            deleteRecords({
+                                                data: {
+                                                    ids:
+                                                        result.dbInsertion
+                                                            ?.ids ?? [],
+                                                },
+                                            }).then(() => {
+                                                closeDialog()
+                                            })
+                                        }}
+                                    >
+                                        Revert
+                                    </Button>
+                                </div>
+                            </Tabs>
                         </div>
                     )}
                 </div>
