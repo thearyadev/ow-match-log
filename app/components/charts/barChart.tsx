@@ -19,7 +19,7 @@ export function BarChart(props: BarChartProps) {
         chart: {
             backgroundColor: 'transparent',
             style: {
-                color: '#FFFFFF',
+                color: '#fafafa',
             },
         },
         title: {
@@ -30,23 +30,23 @@ export function BarChart(props: BarChartProps) {
             categories: props.data.labels,
             labels: {
                 style: {
-                    color: '#FFFFFF',
+                    color: '#fafafa',
                 },
             },
-            lineColor: '#555555',
-            tickColor: '#555555',
+            lineColor: '#fafafa',
+            tickColor: '#fafafa',
         },
         yAxis: {
             labels: {
                 style: {
-                    color: '#FFFFFF',
+                    color: '#fafafa',
                 },
                 step: 1,
             },
             gridLineColor: 'rgba(255, 255, 255, 0.1)',
             title: {
                 style: {
-                    color: '#FFFFFF',
+                    color: '#fafafa',
                     enabled: false,
                 },
             },
@@ -72,13 +72,13 @@ export function BarChart(props: BarChartProps) {
                           return d
                       })
                     : props.data.values,
-                color: '#555555',
+                color: '#fafafa',
             },
         ],
         tooltip: {
             backgroundColor: 'rgba(0, 0, 0, 0.75)',
             style: {
-                color: '#FFFFFF',
+                color: '#fafafa',
             },
         },
         plotOptions: {

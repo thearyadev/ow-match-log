@@ -27,7 +27,6 @@ export function AppSidebar({
     return (
         <Sidebar
             collapsible="icon"
-            variant="floating"
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
         >
@@ -39,7 +38,7 @@ export function AppSidebar({
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
                                         <Link to={item.url}>
-                                            <item.icon />
+                                            <item.icon className="text-gray-300" />
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
@@ -49,7 +48,7 @@ export function AppSidebar({
                     </SidebarGroupContent>
                 </SidebarGroup>
 
-                <SidebarGroup className="h-full overflow-y-scroll">
+                <SidebarGroup className="h-full overflow-y-scroll overflow-x-hidden">
                     <SidebarGroupContent>
                         <SidebarGroupLabel>Collections</SidebarGroupLabel>
                         <SidebarMenu>
@@ -57,8 +56,11 @@ export function AppSidebar({
                                 <SidebarMenuItem key={item.id}>
                                     <SidebarMenuButton asChild>
                                         {/* @ts-ignore */}
-                                        <Link to={`/collection/${item.id}`}>
-                                            <GroupIcon />
+                                        <Link
+                                            to={`/collection/${item.id}`}
+                                            className="text-center"
+                                        >
+                                            <GroupIcon className="text-gray-300" />
                                             <span>{item.name}</span>
                                         </Link>
                                     </SidebarMenuButton>

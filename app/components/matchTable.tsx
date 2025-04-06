@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-table'
 import React from 'react'
 import { Button } from './ui/button'
+import { XIcon } from 'lucide-react'
 
 type Match = Awaited<ReturnType<typeof getMatches>>[0]
 
@@ -23,10 +24,6 @@ export function MatchTable({ matches }: { matches: Match[] }) {
 
     const columns = React.useMemo(
         () => [
-            columnHelper.accessor('id', {
-                header: () => 'ID',
-                cell: (props) => <div>{props.getValue()}</div>,
-            }),
             columnHelper.accessor('mapName', {
                 header: () => 'Map',
                 cell: (props) => <div>{props.getValue()}</div>,
@@ -48,7 +45,7 @@ export function MatchTable({ matches }: { matches: Match[] }) {
                 cell: (props) => <div>{props.getValue()}</div>,
             }),
             columnHelper.accessor('matchTimestamp', {
-                header: () => 'Match Timestamp',
+                header: () => 'Match Timestamp (UTC)',
                 cell: (props) => <div>{props.getValue()}</div>,
             }),
             columnHelper.accessor('matchType', {
@@ -60,7 +57,8 @@ export function MatchTable({ matches }: { matches: Match[] }) {
                 cell: (props) => (
                     <div className="flex justify-center items-center">
                         <Button
-                            variant="destructive"
+                            variant="outline"
+                            size="icon"
                             onClick={() => {
                                 deleteRecord({
                                     data: {
@@ -73,7 +71,7 @@ export function MatchTable({ matches }: { matches: Match[] }) {
                                 })
                             }}
                         >
-                            Delete
+                            <XIcon />
                         </Button>
                     </div>
                 ),

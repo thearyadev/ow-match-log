@@ -35,6 +35,7 @@ import {
 } from '@/actions'
 import { MatchTable } from '@/components/matchTable'
 import { Import } from '@/components/import'
+import { Separator } from '@/components/ui/separator'
 
 export const Route = createFileRoute('/collection/$collectionId')({
     component: RouteComponent,
@@ -73,18 +74,22 @@ function RouteComponent() {
     const data = Route.useLoaderData()
     return (
         <Tabs defaultValue="Statistics" className="p-3">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 py-4 px-1.5">
                 {data.collection !== undefined ? (
-                    <h1 className="text-3xl">
+                    <h1 className="text-2xl">
                         Collection: {data.collection.name}
                     </h1>
                 ) : null}
-                <TabsList className="w-[400px]">
+                <TabsList className="w-[400px] h-7">
                     <TabsTrigger value="Statistics">Statistics</TabsTrigger>
                     <TabsTrigger value="Data">Data</TabsTrigger>
-                    <TabsTrigger value="Import">Import</TabsTrigger>
+                    {data.collection !== undefined ? (
+                        <TabsTrigger value="Import">Import</TabsTrigger>
+                    ) : null}
                 </TabsList>
             </div>
+
+            <Separator className="mb-2" />
             <TabsContent value="Statistics">
                 <div className="grid grid-cols-1 gap-3">
                     <div className="grid grid-cols-1 xl:grid-cols-4 gap-3">
@@ -157,7 +162,7 @@ function RouteComponent() {
                                 Count of maps in match history.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                        <CardContent className="flex justify-center items-center ">
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Await
                                     promise={data.mapCount}
@@ -179,7 +184,7 @@ function RouteComponent() {
                                 Win Percentage for all maps
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                        <CardContent className="flex justify-center items-center ">
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Await
                                     promise={data.mapWinPercentage}
@@ -202,7 +207,7 @@ function RouteComponent() {
                                     Win Percentage for each day of the week
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                            <CardContent className="flex justify-center items-center ">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={data.winrateByDayOfWeek}
@@ -260,7 +265,7 @@ function RouteComponent() {
                                     Winrate by map type
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                            <CardContent className="flex justify-center items-center ">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={data.mapTypeWinrate}
@@ -306,7 +311,7 @@ function RouteComponent() {
                                     Boxplot of match durations
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                            <CardContent className="flex justify-center items-center">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={
@@ -331,7 +336,7 @@ function RouteComponent() {
                                     Boxplot of match durations
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="flex justify-center items-center h-[50vh] overflow-y-hidden">
+                            <CardContent className="flex justify-center items-center ">
                                 <Suspense fallback={<LoadingSpinner />}>
                                     <Await
                                         promise={
@@ -372,13 +377,7 @@ function RouteComponent() {
             <TabsContent value="Import" className="flex flex-grow h-full">
                 {data.collection !== undefined ? (
                     <Import collectionId={data.collection.id} />
-                ) : (
-                    <div>
-                        <h1 className="text-3xl">
-                            Select a collection to import matches
-                        </h1>
-                    </div>
-                )}
+                ) : null}
             </TabsContent>
         </Tabs>
     )

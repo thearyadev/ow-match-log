@@ -16,7 +16,7 @@ export function BoxPlot(props: BoxPlotProps) {
         chart: {
             backgroundColor: 'transparent',
             style: {
-                color: '#FFFFFF',
+                color: '#fafafa',
             },
             type: 'boxplot',
         },
@@ -28,22 +28,22 @@ export function BoxPlot(props: BoxPlotProps) {
             categories: Object.keys(props.data),
             labels: {
                 style: {
-                    color: '#FFFFFF',
+                    color: '#fafafa',
                 },
             },
-            lineColor: '#555555',
-            tickColor: '#555555',
+            lineColor: '#fafafa',
+            tickColor: '#fafafa',
         },
         yAxis: {
             labels: {
                 style: {
-                    color: '#FFFFFF',
+                    color: '#fafafa',
                 },
             },
             gridLineColor: 'rgba(255, 255, 255, 0.1)',
             title: {
                 style: {
-                    color: '#FFFFFF',
+                    color: '#fafafa',
                     enabled: false,
                 },
             },
@@ -56,8 +56,8 @@ export function BoxPlot(props: BoxPlotProps) {
             {
                 type: 'boxplot',
                 data: Object.values(props.data),
-                color: '#555555',
-                fillColor: '#556666',
+                color: '#fafafa',
+                fillColor: '#d2d2d2',
             },
         ],
         tooltip: {

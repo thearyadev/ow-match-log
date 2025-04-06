@@ -38,7 +38,7 @@ export function Import({ collectionId }: { collectionId: number }) {
                 result={result}
                 setResult={setResult}
             />
-            <div className="justify-center overflow-y-hidden p-4 w-full">
+            <div className="justify-center overflow-y-hidden p-4 w-full h-[800px]">
                 <div className="h-full w-full flex flex-col gap-3">
                     <div className="w-full flex flex-grow">
                         <div
