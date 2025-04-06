@@ -174,7 +174,7 @@ function DialogComponent({
                                         Looks Good
                                     </Button>
                                     <Button
-                                        variant="destructive"
+                                        variant="destructiveOutline"
                                         className="w-full"
                                         onClick={() => {
                                             deleteRecords({
