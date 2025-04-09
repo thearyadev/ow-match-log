@@ -383,7 +383,10 @@ function RouteComponent() {
                         <Await
                             promise={data.matches}
                             children={(resolvedMatches) => (
-                                <MatchTable matches={resolvedMatches} />
+                                <MatchTable
+                                    matches={resolvedMatches}
+                                    useHScreen
+                                />
                             )}
                         />
                     </Suspense>

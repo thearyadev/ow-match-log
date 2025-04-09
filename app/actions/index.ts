@@ -600,7 +600,7 @@ export type ProcessResult = {
         error?: string
     }
     dbInsertion?: {
-        ids?: bigint[]
+        items?: any[]
         error?: string
     }
 }
@@ -795,7 +795,7 @@ export const ProcessMatchHistory = createServerFn({ method: 'POST' })
                 }
             }
 
-            const insertedIds: bigint[] = []
+            const insertedMatches: any[] = []
 
             dedupedMatches.forEach(async (match) => {
                 const {
@@ -824,7 +824,7 @@ export const ProcessMatchHistory = createServerFn({ method: 'POST' })
                         },
                         llmGeneration: {
                             matches: {
-                                matches: dedupedMatches,
+                                genMatchReverse,
                             },
                         },
                         dbInsertion: {
@@ -834,22 +834,32 @@ export const ProcessMatchHistory = createServerFn({ method: 'POST' })
                 }
                 const { data: insertedRecord, error: eInsertionError } =
                     await tryCatch(
-                        db.insert(matchTable).values({
-                            mapName,
-                            result,
-                            scoreSelf,
-                            scoreOpponent,
-                            duration: matchDurationSeconds,
-                            matchTimestamp,
-                            matchType,
-                            collectionId,
-                        }),
+                        db
+                            .insert(matchTable)
+                            .values({
+                                mapName,
+                                result,
+                                scoreSelf,
+                                scoreOpponent,
+                                duration: matchDurationSeconds,
+                                matchTimestamp,
+                                matchType,
+                                collectionId,
+                            })
+                            .returning({
+                                id: matchTable.id,
+                                mapName: matchTable.mapName,
+                                result: matchTable.result,
+                                scoreSelf: matchTable.scoreSelf,
+                                scoreOpponent: matchTable.scoreOpponent,
+                                duration: matchTable.duration,
+                                matchTimestamp: matchTable.matchTimestamp,
+                                matchType: matchTable.matchType,
+                                collectoinId: matchTable.collectionId,
+                            }),
                     )
 
-                if (
-                    eInsertionError ||
-                    insertedRecord.lastInsertRowid === undefined
-                ) {
+                if (eInsertionError) {
                     console.error(eInsertionError)
                     return {
                         image: {
@@ -860,15 +870,15 @@ export const ProcessMatchHistory = createServerFn({ method: 'POST' })
                         },
                         llmGeneration: {
                             matches: {
-                                matches: dedupedMatches,
+                                matches: genMatchReverse,
                             },
                         },
                         dbInsertion: {
-                            error: `Error inserting match: ${eInsertionError?.message} || lastInsertRowid is undefined`,
+                            error: `Error inserting match: ${eInsertionError?.message}`,
                         },
                     }
                 }
-                insertedIds.push(insertedRecord.lastInsertRowid)
+                insertedMatches.push(...insertedRecord)
             })
 
             return {
@@ -880,11 +890,11 @@ export const ProcessMatchHistory = createServerFn({ method: 'POST' })
                 },
                 llmGeneration: {
                     matches: {
-                        matches: dedupedMatches,
+                        matches: genMatchReverse,
                     },
                 },
                 dbInsertion: {
-                    ids: insertedIds,
+                    items: insertedMatches,
                 },
             }
         }

@@ -9,6 +9,7 @@ import React from 'react'
 import { Button } from './ui/button'
 import { XIcon } from 'lucide-react'
 import { useRouter } from '@tanstack/react-router'
+import { cn } from '@/lib/utils'
 
 type Match = Awaited<ReturnType<typeof getMatches>>[0]
 
@@ -18,7 +19,10 @@ interface MatchWithDeletionId extends Match {
 
 const columnHelper = createColumnHelper<MatchWithDeletionId>()
 
-export function MatchTable({ matches }: { matches: Match[] }) {
+export function MatchTable({
+    matches,
+    useHScreen,
+}: { matches: Match[]; useHScreen?: boolean }) {
     const [data, setData] = React.useState(
         matches.map((match) => ({ ...match, deletionId: match.id })),
     )
@@ -87,8 +91,8 @@ export function MatchTable({ matches }: { matches: Match[] }) {
         getCoreRowModel: getCoreRowModel(),
     })
     return (
-        <div className="w-full h-screen">
-            <table className="w-full ">
+        <div className={cn('w-full', useHScreen && 'h-screen')}>
+            <table className="w-full">
                 <thead className="">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
