@@ -1,4 +1,4 @@
-import { TypeIcon, GroupIcon } from 'lucide-react'
+import { TypeIcon, GroupIcon, FolderIcon } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
 import {
@@ -12,6 +12,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar'
+import { Button } from './ui/button'
 
 interface SidebarItem {
     title: string
@@ -22,7 +23,12 @@ interface SidebarItem {
 export function AppSidebar({
     items,
     collections,
-}: { items: SidebarItem[]; collections: { id: number; name: string }[] }) {
+    onCreateCollection,
+}: {
+    items: SidebarItem[]
+    collections: { id: number; name: string }[]
+    onCreateCollection: () => void
+}) {
     const { setOpen } = useSidebar()
     return (
         <Sidebar
@@ -44,6 +50,17 @@ export function AppSidebar({
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild>
+                                    <span
+                                        className="hover:cursor-pointer"
+                                        onClick={onCreateCollection}
+                                    >
+                                        <FolderIcon className="text-gray-300" />
+                                        <span>Create Collection</span>
+                                    </span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
@@ -55,8 +72,8 @@ export function AppSidebar({
                             {collections.map((item) => (
                                 <SidebarMenuItem key={item.id}>
                                     <SidebarMenuButton asChild>
-                                        {/* @ts-ignore */}
                                         <Link
+                                            // @ts-ignore
                                             to={`/collection/${item.id}`}
                                             className="text-center"
                                         >

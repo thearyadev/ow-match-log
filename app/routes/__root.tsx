@@ -146,6 +146,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
                                             data: collectionName,
                                         }).then(() => {
                                             setDialogOpen(false)
+                                            setCollectionName('')
                                         })
                                     }}
                                 >
@@ -161,6 +162,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
                         <AppSidebar
                             items={sidebarLinks}
                             collections={collections}
+                            onCreateCollection={() => setDialogOpen(true)}
                         />
                         <main className="w-full h-screen flex flex-col">
                             {children}
