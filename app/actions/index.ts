@@ -669,6 +669,12 @@ export function MapTimeSinceMatchToDate(timeSinceMatch: string): Date {
         hour: (date, val) => date.setHours(date.getHours() - val),
         days: (date, val) => date.setDate(date.getDate() - val),
         day: (date, val) => date.setDate(date.getDate() - val),
+        weeks: (date, val) => date.setDate(date.getDate() - val * 7),
+        week: (date, val) => date.setDate(date.getDate() - val * 7),
+        months: (date, val) => date.setMonth(date.getMonth() - val),
+        month: (date, val) => date.setMonth(date.getMonth() - val),
+        years: (date, val) => date.setFullYear(date.getFullYear() - val),
+        year: (date, val) => date.setFullYear(date.getFullYear() - val),
     }
 
     const handler = unitHandlers[unit]
