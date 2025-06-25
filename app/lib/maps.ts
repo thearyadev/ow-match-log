@@ -81,6 +81,9 @@ export const Maps: MapRecord = {
     'Antarctic Peninsula': {
         mapType: 'control',
     },
+    Aatlis: {
+        mapType: 'flashpoint',
+    },
     Runasapi: {
         mapType: 'push',
     },

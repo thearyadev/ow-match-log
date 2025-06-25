@@ -564,6 +564,7 @@ const Match = z.object({
             'Runasapi',
             'Samoa',
             'Shambali Monastery',
+            'Aatlis'
         ])
         .describe('name of the map. If not found use Other'),
     result: z.enum(['victory', 'defeat', 'draw']),
